@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f0f14">
+<title>Irodori Starter A1 — Japanese for Life</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ── Page-specific overrides ── */
+#main { display: none; }
+#lesson-view { display: none; }
+#exercise-view { display: none; }
+#stroke-view { display: none; }
+
+.book-banner {
+  background: linear-gradient(135deg, rgba(192,132,252,0.12), rgba(129,140,248,0.08));
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-xl);
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.1rem;
+  display: flex; align-items: center; gap: 12px;
+}
+.book-cover {
+  width: 52px; height: 52px; border-radius: 10px;
+  background: linear-gradient(135deg, #ec4899, #c084fc);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; flex-shrink: 0;
+}
+.book-info h2 { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+.book-info p  { font-size: 0.72rem; color: var(--text3); margin-top: 2px; }
+
+.exercise-intro {
+  background: rgba(129,140,248,0.07);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.exercise-type-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem; }
+.ex-type-btn {
+  padding: 6px 14px; border-radius: 99px;
+  border: 1px solid var(--border2);
+  background: var(--card2); color: var(--text2);
+  font-size: 0.78rem; cursor: pointer;
+  transition: all 0.18s;
+}
+.ex-type-btn.on { background: var(--accent2); border-color: var(--accent2); color: #fff; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- ── DRAWER OVERLAY + DRAWER ── -->
+<div class="drawer-overlay" id="drawer-overlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <h2>📚 Irodori Courses</h2>
+    <button class="drawer-close" id="drawer-close">✕</button>
+  </div>
+  <div class="drawer-section">
+    <div class="drawer-sec-title">Books</div>
+    <a class="drawer-item active" href="index.html">
+      <span class="drawer-icon">🌸</span>
+      <div class="drawer-item-text">
+        <div class="drawer-item-title">Starter A1 — 入門</div>
+        <div class="drawer-item-sub">18 Lessons • Beginner</div>
+      </div>
+      <span class="drawer-badge new">Current</span>
+    </a>
+    <a class="drawer-item" href="elementary1.html">
+      <span class="drawer-icon">🌿</span>
+      <div class="drawer-item-text">
+        <div class="drawer-item-title">Elementary 1 A2 — 初級1</div>
+        <div class="drawer-item-sub">18 Lessons • JFT-Basic</div>
+      </div>
+    </a>
+  </div>
+  <div class="drawer-divider"></div>
+  <div class="drawer-section">
+    <div class="drawer-sec-title">Tools</div>
+    <div class="drawer-item" onclick="navTo('stroke');Drawer.close()">
+      <span class="drawer-icon">🖊️</span>
+      <div class="drawer-item-text">
+        <div class="drawer-item-title">Stroke Order</div>
+        <div class="drawer-item-sub">Hiragana + Katakana</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <button class="nav-icon-btn" id="home-btn" onclick="navTo('lessons')" title="Home">🏠</button>
+    <div>
+      <div class="navbar-title">いろどり 入門 A1</div>
+      <div class="navbar-subtitle">Irodori Starter</div>
+    </div>
+  </div>
+  <button class="nav-icon-btn" id="menu-btn" title="Menu">☰</button>
+</nav>
+
+<!-- ══════════════════════════════════════
+     LESSON LIST SCREEN
+     ══════════════════════════════════════ -->
+<div id="main" class="page">
+  <div class="book-banner">
+    <div class="book-cover">🌸</div>
+    <div class="book-info">
+      <h2>Starter (A1) — 入門</h2>
+      <p>Irodori: Japanese for Life in Japan</p>
+    </div>
+  </div>
+
+  <div id="book-prog"></div>
+  <div id="book-stats"></div>
+  <div id="lesson-list"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     LESSON DETAIL SCREEN
+     ══════════════════════════════════════ -->
+<div id="lesson-view" class="page">
+  <button class="btn-back" onclick="navTo('lessons')">← All Lessons</button>
+  <div id="lesson-content"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     EXERCISE SCREEN
+     ══════════════════════════════════════ -->
+<div id="exercise-view" class="page">
+  <button class="btn-back" id="ex-back-btn">← Back to Lesson</button>
+  <div id="exercise-content"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     STROKE ORDER SCREEN
+     ══════════════════════════════════════ -->
+<div id="stroke-view" class="page">
+  <button class="btn-back" onclick="navTo('lessons')">← Back</button>
+  <div class="page-title">🖊️ Stroke Order</div>
+  <div class="page-sub">Click a character to see how to write it</div>
+  <div id="stroke-content"></div>
+</div>
+
+<!-- ── BOTTOM TAB BAR ── -->
+<nav class="tab-bar">
+  <button class="tab-item active" data-route="lessons" onclick="navTo('lessons')">
+    <span class="tab-icon">📖</span>Lessons
+  </button>
+  <button class="tab-item" data-route="stroke" onclick="navTo('stroke')">
+    <span class="tab-icon">🖊️</span>Stroke
+  </button>
+  <button class="tab-item" data-route="review" onclick="navTo('review')">
+    <span class="tab-icon">🧠</span>Review
+  </button>
+</nav>
+
+<script src="js/app.js"></script>
+<script src="data/starter.js"></script>
+<script>
+/* ═════════════════════════════════════════
+   STARTER A1 — Page Controller
+   ═════════════════════════════════════════ */
+
+const BOOK = 'starter';
+let currentLesson = null;
+let currentExType = 'match';
+let exQueue = [], exIdx = 0, exScore = 0, exTotal = 0;
+
+// ── Navigation ───────────────────────────────────────────────────
+function navTo(view, params = {}) {
+  ['main','lesson-view','exercise-view','stroke-view'].forEach(id => hide(id));
+  document.querySelectorAll('.tab-item').forEach(t =>
+    t.classList.toggle('active', t.dataset.route === view));
+  if (view === 'lessons')  { show('main'); renderLessonList(); }
+  if (view === 'lesson')   { show('lesson-view'); renderLessonDetail(params.num); }
+  if (view === 'exercise') { show('exercise-view'); startExercise(params.num, params.type || 'match'); }
+  if (view === 'stroke')   { show('stroke-view'); renderStroke(); }
+  if (view === 'review')   { show('exercise-view'); startRandomReview(); }
+  window.scrollTo(0,0);
+}
+
+// ── Lesson List ──────────────────────────────────────────────────
+function renderLessonList() {
+  const prog = Progress.getBookProgress(BOOK, STARTER.meta.lessons);
+  el('book-prog').innerHTML = renderProgBar(prog.pct, 'book-prog-bar');
+  el('book-stats').innerHTML = renderStatsGrid(prog.done, prog.total, 'Lessons');
+
+  let html = '';
+  STARTER.topics.forEach(topic => {
+    html += `<div class="section-label">▶ ${topic.en}</div>`;
+    topic.lessons.forEach(lnum => {
+      const lesson = STARTER.lessons[lnum - 1];
+      const done = Progress.isLessonDone(BOOK, lnum);
+      const pills = lesson.cando.slice(0,2).map(c =>
+        `<span class="lc-pill">${c.substring(0,55)}${c.length>55?'…':''}</span>`).join('');
+      html += `
+        <div class="lesson-card${done?' done':''}" onclick="navTo('lesson',{num:${lnum}})">
+          <div class="lc-badge">Lesson ${lnum}</div>
+          <div class="lc-body">
+            <div class="lc-en">${esc(lesson.en)}</div>
+            <div class="lc-jp">${esc(lesson.jp)}</div>
+            <div class="lc-pills">${pills}</div>
+          </div>
+          ${done ? '<span class="lc-check">✓</span>' : ''}
+        </div>`;
+    });
+  });
+  el('lesson-list').innerHTML = html;
+}
+
+// ── Lesson Detail ────────────────────────────────────────────────
+function renderLessonDetail(num) {
+  currentLesson = num;
+  const L = STARTER.lessons[num - 1];
+  const done = Progress.isLessonDone(BOOK, num);
+  const topic = STARTER.topics.find(t => t.lessons.includes(num));
+
+  const html = `
+    <div class="detail-card">
+      <div class="detail-topic">▶ ${esc(topic?.en || '')}</div>
+      <div class="detail-num">Lesson ${num} of ${STARTER.meta.lessons} — ${STARTER.meta.book} (${STARTER.meta.level})</div>
+      <div class="detail-title">${esc(L.en)}</div>
+      <div class="detail-jp">${esc(L.jp)}</div>
+
+      <div class="detail-section">
+        <div class="detail-sec-hdr">🎯 Can-do Goals</div>
+        ${renderCanDoList(L.cando)}
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-sec-hdr">✍️ Activities</div>
+        ${renderActivities(L.activities)}
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-sec-hdr">💬 Key Phrases</div>
+        ${L.key_phrases ? renderPhrases(L.key_phrases, 'Audio.speak') : '<p style="color:var(--text3);font-size:0.8rem">See activities above</p>'}
+      </div>
+
+      ${(L.kanji && L.kanji.length) ? `
+      <div class="detail-section">
+        <div class="detail-sec-hdr">漢 Kanji Words</div>
+        ${renderKanjiGrid(L.kanji)}
+      </div>` : ''}
+
+      ${(L.grammar && L.grammar.length) ? `
+      <div class="detail-section">
+        <div class="detail-sec-hdr">📖 Grammar Notes</div>
+        ${renderGrammar(L.grammar)}
+      </div>` : ''}
+
+      <div class="detail-section">
+        <div class="detail-sec-hdr">🇯🇵 Tips for Life in Japan</div>
+        ${renderTips(L.tips)}
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:0.5rem;flex-wrap:wrap">
+        <button class="btn btn-primary" style="flex:1;min-width:130px" onclick="navTo('exercise',{num:${num},type:'match'})">
+          🧠 Practice Exercises
+        </button>
+        <button class="btn btn-teal btn-full" onclick="toggleDone(${num})" id="done-btn">
+          ${done ? '✓ Completed — undo' : '✓ Mark Complete'}
+        </button>
+      </div>
+    </div>`;
+
+  el('lesson-content').innerHTML = html;
+}
+
+function toggleDone(num) {
+  const done = Progress.isLessonDone(BOOK, num);
+  Progress.setLessonDone(BOOK, num, !done);
+  const btn = el('done-btn');
+  if (btn) btn.textContent = (!done) ? '✓ Completed — undo' : '✓ Mark Complete';
+}
+
+// ── Exercise Engine ──────────────────────────────────────────────
+function buildExQueue(lessonNum, type) {
+  const L = STARTER.lessons[lessonNum - 1];
+  let items = [];
+
+  if (type === 'match' || type === 'jp-en') {
+    // Key phrase matching
+    if (L.key_phrases && L.key_phrases.length) {
+      L.key_phrases.forEach(p => items.push({ q: p.jp, a: p.en, type: 'match-jp', jp: p.jp }));
+    }
+    // Exercise items
+    if (L.exercises) {
+      L.exercises.filter(e => e.type === 'match').forEach(e =>
+        items.push({ q: e.q, a: e.a, type: 'match' }));
+    }
+  } else if (type === 'grammar') {
+    if (L.grammar && L.grammar.length) {
+      L.grammar.forEach(g => items.push({ q: g.pattern, a: g.meaning, type: 'match', example: g.example }));
+    }
+  } else if (type === 'kanji') {
+    if (L.kanji && L.kanji.length) {
+      L.kanji.forEach(k => items.push({ q: k.jp, a: k.en, type: 'kanji-match', r: k.r }));
+    }
+  }
+
+  return ExerciseEngine.shuffle(items).slice(0, 12);
+}
+
+function buildWrongPool(lessonNum, type) {
+  // Pull answers from all lessons for wrong options
+  const pool = [];
+  STARTER.lessons.forEach(L => {
+    if (type === 'kanji') {
+      (L.kanji || []).forEach(k => pool.push(k.en));
+    } else if (type === 'grammar') {
+      (L.grammar || []).forEach(g => pool.push(g.meaning));
+    } else {
+      (L.key_phrases || []).forEach(p => pool.push(p.en));
+    }
+  });
+  return [...new Set(pool)];
+}
+
+function startExercise(lessonNum, type) {
+  currentLesson = lessonNum;
+  currentExType = type;
+  exQueue = buildExQueue(lessonNum, type);
+  exIdx = 0; exScore = 0; exTotal = exQueue.length;
+
+  el('ex-back-btn').onclick = () => navTo('lesson', { num: lessonNum });
+
+  if (!exQueue.length) {
+    el('exercise-content').innerHTML = `
+      <div class="coming-soon">
+        <div class="cs-icon">📭</div>
+        <h3>No exercises yet for this lesson</h3>
+        <p>Go back and read the lesson content first!</p>
+        <button class="btn btn-secondary" style="margin-top:1rem" onclick="navTo('lesson',{num:${lessonNum}})">← Back to Lesson</button>
+      </div>`;
+    return;
+  }
+
+  renderExercise();
+}
+
+function startRandomReview() {
+  // Pick random exercises from all lessons
+  currentLesson = null;
+  currentExType = 'match';
+  el('ex-back-btn').onclick = () => navTo('lessons');
+
+  const allItems = [];
+  STARTER.lessons.forEach((L, i) => {
+    (L.key_phrases || []).slice(0, 3).forEach(p =>
+      allItems.push({ q: p.jp, a: p.en, type: 'match-jp', jp: p.jp, lessonNum: i+1 }));
+  });
+  exQueue = ExerciseEngine.shuffle(allItems).slice(0, 15);
+  exIdx = 0; exScore = 0; exTotal = exQueue.length;
+  renderExercise();
+}
+
+function renderExercise() {
+  if (exIdx >= exQueue.length) { renderExerciseResult(); return; }
+
+  const item = exQueue[exIdx];
+  const answered = false;
+  const wrongPool = buildWrongPool(currentLesson, currentExType);
+  const wrongAnswers = ExerciseEngine.shuffle(wrongPool.filter(a => a !== item.a)).slice(0, 3);
+  const opts = ExerciseEngine.shuffle([item.a, ...wrongAnswers]);
+
+  const isKanji = item.type === 'kanji-match';
+  const isJP = item.type === 'match-jp';
+
+  el('exercise-content').innerHTML = `
+    <div class="quiz-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+        <div class="exercise-type-row">
+          ${currentLesson ? `
+          <button class="ex-type-btn${currentExType==='match'?' on':''}" onclick="startExercise(${currentLesson},'match')">Phrases</button>
+          <button class="ex-type-btn${currentExType==='grammar'?' on':''}" onclick="startExercise(${currentLesson},'grammar')">Grammar</button>
+          <button class="ex-type-btn${currentExType==='kanji'?' on':''}" onclick="startExercise(${currentLesson},'kanji')">Kanji</button>
+          ` : '<span style="font-size:0.75rem;color:var(--text3)">🧠 Review Mode</span>'}
+        </div>
+      </div>
+
+      <div class="quiz-score">Q ${exIdx+1}/${exTotal} · Score: ${exScore}</div>
+
+      ${isJP || isKanji ? `
+        <div class="quiz-q-char" id="q-char" style="cursor:pointer" onclick="Audio.speak('${esc(item.jp||item.q).replace(/'/g,"\\'")}')">
+          ${esc(item.jp || item.q)}
+        </div>
+        <div class="quiz-q-text">${isKanji ? `Reading: ${esc(item.r||'?')} · ` : ''}What does this mean?</div>
+      ` : `
+        <div class="quiz-q-text" style="font-size:1rem;font-weight:600;color:var(--text);margin:1rem 0">${esc(item.q)}</div>
+      `}
+
+      ${isJP ? `<button class="btn btn-secondary" style="margin-bottom:0.75rem;font-size:0.8rem" onclick="Audio.speak('${esc(item.jp).replace(/'/g,"\\'")}')">▶ Listen</button>` : ''}
+
+      <div class="quiz-opts" id="opts-container"></div>
+      <div class="quiz-feedback" id="ex-feedback"></div>
+      <button class="btn-next" id="ex-next" onclick="nextExercise()" disabled>Next →</button>
+    </div>`;
+
+  // Render options
+  const container = el('opts-container');
+  opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.textContent = opt;
+    btn.addEventListener('click', () => checkAnswer(opt, item.a, btn));
+    container.appendChild(btn);
+  });
+}
+
+function checkAnswer(chosen, correct, btn) {
+  if (el('ex-next') && !el('ex-next').disabled === false) return; // already answered
+  const fb = el('ex-feedback');
+  document.querySelectorAll('.quiz-opt').forEach(b => b.disabled = true);
+  if (chosen === correct) {
+    btn.classList.add('correct');
+    fb.textContent = '✓ Correct!'; fb.className = 'quiz-feedback correct';
+    exScore++;
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.quiz-opt').forEach(b => { if(b.textContent===correct) b.classList.add('correct'); });
+    fb.textContent = `✗ Answer: ${correct}`; fb.className = 'quiz-feedback wrong';
+  }
+  el('ex-next').disabled = false;
+}
+
+function nextExercise() {
+  exIdx++;
+  renderExercise();
+}
+
+function renderExerciseResult() {
+  const pct = Math.round(exScore / exTotal * 100);
+  const emoji = pct >= 80 ? '🎉' : pct >= 60 ? '💪' : '📚';
+  el('exercise-content').innerHTML = `
+    <div class="quiz-card" style="text-align:center">
+      <div style="font-size:3rem;margin:0.5rem 0">${emoji}</div>
+      <div style="font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:6px">Exercise Complete!</div>
+      <div style="font-size:0.95rem;color:var(--text2);margin-bottom:4px">${exScore}/${exTotal} correct</div>
+      <div style="font-size:2rem;font-weight:700;color:${pct>=70?'var(--green)':'var(--amber)'};margin-bottom:1rem">${pct}%</div>
+      <div style="font-size:0.82rem;color:var(--text3);margin-bottom:1.5rem">
+        ${pct>=80?'Excellent! Keep going!':pct>=60?'Good progress! Try again to improve.':'Review the lesson and try again.'}
+      </div>
+      ${currentLesson ? `
+      <button class="btn btn-primary btn-full" onclick="startExercise(${currentLesson}, currentExType)" style="margin-bottom:8px">↩ Try Again</button>
+      <button class="btn btn-secondary btn-full" onclick="navTo('lesson',{num:${currentLesson}})">← Back to Lesson</button>
+      ${pct>=70?`<button class="btn btn-teal btn-full" style="margin-top:8px" onclick="toggleDone(${currentLesson});navTo('lessons')">✓ Mark Complete & Continue →</button>`:''}
+      ` : `
+      <button class="btn btn-primary btn-full" onclick="startRandomReview()" style="margin-bottom:8px">↩ New Review</button>
+      <button class="btn btn-secondary btn-full" onclick="navTo('lessons')">← All Lessons</button>
+      `}
+    </div>`;
+}
+
+// ── Stroke Order ─────────────────────────────────────────────────
+const STROKE_DATA = {
+  h: {
+    'あ':[[12,32],[78,32],[45,15],[45,50],[32,65],[20,75],[54,40],[72,48],[70,65],[52,75],[33,68],[28,54],[40,43],[58,40]],
+    'い':[[28,22],[24,52],[28,66],[62,25],[66,42],[62,63],[48,74]],
+    'う':[[36,16],[54,16],[20,30],[45,19],[66,30],[68,52],[52,68],[36,72],[24,62],[20,46],[30,34],[50,30]],
+    'え':[[14,27],[76,27],[45,14],[45,52],[56,65],[63,74],[26,46],[40,36],[60,46],[60,63],[45,72],[26,63]],
+    'お':[[12,27],[78,27],[45,14],[45,52],[30,65],[19,76],[54,37],[72,46],[70,63],[52,73],[33,66],[28,52],[40,42],[60,40]],
+  },
+  k: {
+    'ア':[[13,29],[77,29],[45,18],[30,75]],
+    'イ':[[28,25],[46,51],[59,14],[59,77]],
+    'ウ':[[40,14],[50,14],[20,31],[71,31],[71,63],[45,77]],
+    'エ':[[16,29],[74,29],[45,29],[45,63],[16,63],[74,63]],
+    'オ':[[13,29],[77,29],[45,14],[45,63],[18,49],[65,63]],
+  }
+};
+
+const HIRAGANA_FULL = ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を','ん'];
+const KATAKANA_FULL = ['ア','イ','ウ','エ','オ','カ','キ','ク','ケ','コ','サ','シ','ス','セ','ソ','タ','チ','ツ','テ','ト','ナ','ニ','ヌ','ネ','ノ','ハ','ヒ','フ','ヘ','ホ','マ','ミ','ム','メ','モ','ヤ','ユ','ヨ','ラ','リ','ル','レ','ロ','ワ','ヲ','ン'];
+
+let strokeType = 'h', strokeSel = 'あ';
+
+function renderStroke() {
+  const chars = strokeType === 'h' ? HIRAGANA_FULL : KATAKANA_FULL;
+  const label = strokeType === 'h' ? 'Hiragana' : 'Katakana';
+
+  el('stroke-content').innerHTML = `
+    <div class="stroke-type-row">
+      <button class="btn${strokeType==='h'?' btn-primary':' btn-secondary'}" onclick="strokeType='h';renderStroke()">ひらがな</button>
+      <button class="btn${strokeType==='k'?' btn-primary':' btn-secondary'}" onclick="strokeType='k';renderStroke()">カタカナ</button>
+    </div>
+    <div class="stroke-char-grid">
+      ${chars.map(c => `<button class="stroke-char-btn${c===strokeSel?' sel':''}" onclick="strokeSel='${c}';renderStroke()">${c}</button>`).join('')}
+    </div>
+    <div style="text-align:center;background:var(--card);border:1px solid var(--border2);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1rem">
+      <div style="font-size:0.72rem;color:var(--text3);margin-bottom:0.5rem">${label}</div>
+      <div style="position:relative;display:inline-block;width:180px;height:180px">
+        <div style="font-size:8rem;font-family:var(--font-jp);color:var(--text);line-height:1;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">${strokeSel}</div>
+        ${makeOverlaySVG(strokeSel)}
+      </div>
+      <div style="margin-top:0.75rem">
+        <button class="btn btn-secondary" onclick="Audio.speak('${strokeSel}')">▶ Listen</button>
+      </div>
+    </div>`;
+}
+
+function makeOverlaySVG(char) {
+  const type = HIRAGANA_FULL.includes(char) ? 'h' : 'k';
+  const data = STROKE_DATA[type] && STROKE_DATA[type][char];
+  if (!data) return '';
+  const COLS = ['#5B9EFF','#FF6B35','#2DD4A0','#C77DFF','#FF5555','#F0C040'];
+
+  // Simple: treat flat array as pairs → strokes based on gaps (we stored flat for simplicity)
+  // For full stroke data, extend STROKE_DATA above
+  return `<svg viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none">
+    <line x1="45" y1="5" x2="45" y2="85" stroke="rgba(255,255,255,0.06)" stroke-width="0.5" stroke-dasharray="3,3"/>
+    <line x1="5" y1="45" x2="85" y2="45" stroke="rgba(255,255,255,0.06)" stroke-width="0.5" stroke-dasharray="3,3"/>
+  </svg>`;
+}
+
+// ── Init ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  navTo('lessons');
+  // Drawer
+  el('menu-btn').addEventListener('click', () => {
+    el('drawer').classList.add('open');
+    el('drawer-overlay').classList.add('open');
+  });
+  el('drawer-overlay').addEventListener('click', () => {
+    el('drawer').classList.remove('open');
+    el('drawer-overlay').classList.remove('open');
+  });
+  el('drawer-close').addEventListener('click', () => {
+    el('drawer').classList.remove('open');
+    el('drawer-overlay').classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>

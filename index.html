@@ -2,541 +2,947 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f0f14">
-<title>Irodori Starter A1 — Japanese for Life</title>
-<link rel="stylesheet" href="css/style.css">
+<title>Irodori Starter A1</title>
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ── Page-specific overrides ── */
-#main { display: none; }
-#lesson-view { display: none; }
-#exercise-view { display: none; }
-#stroke-view { display: none; }
+:root{
+  --bg:#0f0f14;--surface:#16161f;--card:#1c1c28;--card2:#232333;--card3:#2a2a3e;
+  --accent:#c084fc;--accent2:#818cf8;--teal:#2dd4bf;--green:#4ade80;
+  --amber:#fbbf24;--red:#f87171;--text:#f0eeff;--text2:#a09ec0;--text3:#5e5c80;
+  --border:rgba(192,132,252,0.10);--border2:rgba(192,132,252,0.22);
+  --r8:8px;--r12:12px;--r16:16px;--r22:22px;
+  --font-jp:'Noto Sans JP',sans-serif;
+  --nav:52px;--tab:58px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;font-size:16px;-webkit-text-size-adjust:100%}
+body{min-height:100vh;overflow-x:hidden;padding-bottom:calc(var(--tab) + env(safe-area-inset-bottom,0px))}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
 
-.book-banner {
-  background: linear-gradient(135deg, rgba(192,132,252,0.12), rgba(129,140,248,0.08));
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-xl);
-  padding: 1.1rem 1.25rem;
-  margin-bottom: 1.1rem;
-  display: flex; align-items: center; gap: 12px;
-}
-.book-cover {
-  width: 52px; height: 52px; border-radius: 10px;
-  background: linear-gradient(135deg, #ec4899, #c084fc);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.6rem; flex-shrink: 0;
-}
-.book-info h2 { font-size: 0.95rem; font-weight: 700; color: var(--text); }
-.book-info p  { font-size: 0.72rem; color: var(--text3); margin-top: 2px; }
+/* NAVBAR */
+.navbar{position:sticky;top:0;z-index:50;height:var(--nav);padding-top:env(safe-area-inset-top,0);
+  background:rgba(15,15,20,0.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-between;padding-left:1rem;padding-right:1rem}
+.nb-left{display:flex;align-items:center;gap:8px}
+.nb-title{font-size:.95rem;font-weight:700;font-family:var(--font-jp);
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nb-sub{font-size:.6rem;color:var(--text3);margin-top:1px}
+.icon-btn{width:38px;height:38px;border-radius:var(--r8);border:1px solid var(--border2);
+  background:var(--card);color:var(--text2);font-size:1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0}
+.icon-btn:hover,.icon-btn:active{border-color:var(--accent);color:var(--accent)}
 
-.exercise-intro {
-  background: rgba(129,140,248,0.07);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-lg);
-  padding: 1rem;
-  margin-bottom: 1rem;
-  text-align: center;
-}
-.exercise-type-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem; }
-.ex-type-btn {
-  padding: 6px 14px; border-radius: 99px;
-  border: 1px solid var(--border2);
-  background: var(--card2); color: var(--text2);
-  font-size: 0.78rem; cursor: pointer;
-  transition: all 0.18s;
-}
-.ex-type-btn.on { background: var(--accent2); border-color: var(--accent2); color: #fff; font-weight: 600; }
+/* TAB BAR */
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:50;height:var(--tab);
+  padding-bottom:env(safe-area-inset-bottom,0);
+  background:rgba(15,15,20,0.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1px solid var(--border);display:flex;align-items:stretch}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;cursor:pointer;color:var(--text3);font-size:.58rem;border:none;
+  background:none;-webkit-tap-highlight-color:transparent;transition:color .18s}
+.tab-btn .ti{font-size:1.3rem;line-height:1}
+.tab-btn.on{color:var(--accent)}
+
+/* PAGES */
+.page{padding:1rem 1rem 1.5rem;max-width:680px;margin:0 auto}
+.screen{display:none}
+.screen.active{display:block}
+
+/* DRAWER */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;
+  opacity:0;pointer-events:none;transition:opacity .25s}
+.mask.on{opacity:1;pointer-events:all}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(290px,86vw);
+  background:var(--surface);border-left:1px solid var(--border2);z-index:101;
+  transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  overflow-y:auto;padding-top:env(safe-area-inset-top,0)}
+.drawer.on{transform:translateX(0)}
+.dr-head{display:flex;align-items:center;justify-content:space-between;
+  padding:.9rem 1rem;border-bottom:1px solid var(--border)}
+.dr-head h2{font-size:.9rem;font-weight:600}
+.dr-close{background:none;border:none;color:var(--text3);font-size:1.2rem;cursor:pointer;padding:4px}
+.dr-sec{padding:.65rem 1rem .2rem}
+.dr-sec-title{font-size:.58rem;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.4rem}
+.dr-item{display:flex;align-items:center;gap:8px;padding:.65rem .75rem;border-radius:var(--r12);
+  cursor:pointer;border:1px solid transparent;margin-bottom:3px;text-decoration:none;
+  transition:all .15s;-webkit-tap-highlight-color:transparent}
+.dr-item:hover,.dr-item:active{background:var(--card);border-color:var(--border)}
+.dr-icon{font-size:1rem;width:24px;text-align:center;flex-shrink:0}
+.dr-title{font-size:.82rem;font-weight:600;color:var(--text)}
+.dr-sub{font-size:.64rem;color:var(--text3);margin-top:1px}
+.dr-badge{font-size:.58rem;padding:2px 7px;border-radius:99px;background:rgba(192,132,252,.18);color:var(--accent)}
+.dr-divider{height:1px;background:var(--border);margin:.35rem 1rem}
+
+/* BOOK BANNER */
+.book-banner{background:linear-gradient(135deg,rgba(192,132,252,.1),rgba(129,140,248,.06));
+  border:1px solid var(--border2);border-radius:var(--r22);padding:1rem 1.1rem;
+  margin-bottom:1rem;display:flex;align-items:center;gap:12px}
+.book-cover{width:50px;height:50px;border-radius:10px;
+  background:linear-gradient(135deg,#ec4899,#c084fc);
+  display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
+.book-info h2{font-size:.92rem;font-weight:700}
+.book-info p{font-size:.7rem;color:var(--text3);margin-top:2px}
+
+/* PROGRESS */
+.prog-wrap{display:flex;align-items:center;gap:8px;margin-bottom:.9rem}
+.prog-track{flex:1;height:5px;background:var(--card2);border-radius:99px;overflow:hidden}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:99px;transition:width .5s}
+.prog-lbl{font-size:.7rem;color:var(--text3);min-width:28px;text-align:right}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--r12);padding:.7rem;text-align:center}
+.stat-n{font-size:1.4rem;font-weight:700}
+.stat-l{font-size:.6rem;color:var(--text3);margin-top:2px}
+
+/* SECTION LABEL */
+.sec-label{font-size:.6rem;font-weight:700;color:var(--accent2);letter-spacing:.07em;
+  text-transform:uppercase;padding:.8rem 0 .3rem;display:flex;align-items:center;gap:6px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* LESSON CARD */
+.lcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r16);
+  padding:.85rem 1rem;margin-bottom:8px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:border-color .15s,transform .12s;display:flex;align-items:flex-start;gap:10px}
+.lcard:active{transform:scale(.988)}
+.lcard:hover{border-color:var(--border2)}
+.lcard.done{border-color:var(--teal)}
+.lc-badge{font-size:.6rem;font-weight:700;color:var(--accent2);background:rgba(129,140,248,.12);
+  padding:3px 8px;border-radius:6px;flex-shrink:0;margin-top:2px;white-space:nowrap}
+.lc-body{flex:1;min-width:0}
+.lc-en{font-size:.88rem;font-weight:600;color:var(--text)}
+.lc-jp{font-size:.78rem;font-family:var(--font-jp);color:var(--text2);margin-top:2px}
+.lc-pills{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+.lc-pill{font-size:.62rem;color:var(--text3);background:var(--card2);border-radius:99px;padding:2px 7px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.lc-check{color:var(--teal);font-size:.85rem;flex-shrink:0}
+
+/* DETAIL */
+.dcard{background:var(--card);border:1px solid var(--border2);border-radius:var(--r22);padding:1.1rem;margin-bottom:.9rem}
+.d-topic{font-size:.6rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.d-num{font-size:.65rem;color:var(--text3);margin-bottom:3px}
+.d-title{font-size:1.1rem;font-weight:700;margin-bottom:2px}
+.d-jp{font-size:.92rem;font-family:var(--font-jp);color:var(--text2);margin-bottom:.9rem}
+.d-sec{margin-bottom:1.1rem}
+.d-hdr{font-size:.64rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;
+  margin-bottom:.5rem;display:flex;align-items:center;gap:6px}
+.d-hdr::after{content:'';flex:1;height:1px;background:var(--border)}
+.cando-item{display:flex;gap:7px;align-items:flex-start;padding:.5rem .7rem;
+  background:rgba(192,132,252,.05);border-radius:var(--r8);margin-bottom:4px;border-left:2px solid var(--accent2)}
+.cando-icon{color:var(--accent2);font-size:.72rem;flex-shrink:0;margin-top:2px}
+.cando-txt{font-size:.78rem;color:var(--text2);line-height:1.45}
+.phrase-row{display:flex;align-items:baseline;gap:8px;padding:.55rem .7rem;
+  border-radius:var(--r8);background:var(--card2);margin-bottom:4px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;transition:background .15s}
+.phrase-row:hover,.phrase-row:active{background:var(--card3)}
+.ph-jp{font-size:.95rem;font-family:var(--font-jp);color:var(--text);flex-shrink:0}
+.ph-right{flex:1;min-width:0}
+.ph-r{font-size:.68rem;color:var(--text3)}
+.ph-en{font-size:.74rem;color:var(--text2);margin-top:1px}
+.ph-play{color:var(--accent2);font-size:.85rem;flex-shrink:0}
+.kanji-grid{display:flex;flex-wrap:wrap;gap:5px}
+.kchip{background:var(--card2);border:1px solid var(--border);border-radius:var(--r8);
+  padding:5px 9px;text-align:center;cursor:pointer;min-width:50px;
+  transition:border-color .15s;-webkit-tap-highlight-color:transparent}
+.kchip:hover,.kchip:active{border-color:var(--accent2)}
+.kc-jp{font-size:1rem;font-family:var(--font-jp);color:var(--text)}
+.kc-r{font-size:.58rem;color:var(--text3);margin-top:2px}
+.kc-en{font-size:.58rem;color:var(--teal);margin-top:1px}
+.gram-item{padding:.6rem .75rem;background:var(--card2);border-radius:var(--r8);margin-bottom:5px}
+.gi-pat{font-size:.82rem;font-weight:600;color:var(--accent);font-family:var(--font-jp);margin-bottom:2px}
+.gi-ex{font-size:.77rem;color:var(--text2);font-family:var(--font-jp)}
+.gi-m{font-size:.7rem;color:var(--text3);margin-top:2px}
+.act-row{display:flex;align-items:center;gap:7px;padding:.5rem .75rem;
+  background:var(--card2);border-radius:var(--r8);margin-bottom:4px}
+.act-icon{font-size:.95rem;flex-shrink:0}
+.act-txt{font-size:.78rem;color:var(--text2);font-family:var(--font-jp);flex:1}
+.act-en{font-size:.64rem;color:var(--text3)}
+.act-play{width:28px;height:28px;border-radius:50%;border:1px solid var(--border2);
+  background:var(--card);color:var(--accent2);font-size:.7rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.act-play:hover,.act-play:active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.tips-box{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.18);border-radius:var(--r12);padding:.7rem .9rem}
+.tips-tag{display:inline-block;font-size:.65rem;background:rgba(251,191,36,.12);color:var(--amber);
+  border-radius:99px;padding:3px 8px;margin:2px 3px 2px 0}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  padding:10px 16px;border-radius:var(--r12);font-size:.85rem;font-weight:600;
+  cursor:pointer;border:none;transition:opacity .18s,transform .12s;
+  -webkit-tap-highlight-color:transparent;font-family:inherit}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--accent);color:#fff}
+.btn-p:hover{opacity:.88}
+.btn-s{background:var(--card2);color:var(--text2);border:1px solid var(--border2)}
+.btn-s:hover{border-color:var(--accent);color:var(--accent)}
+.btn-t{background:rgba(45,212,191,.13);border:1px solid var(--teal);color:var(--teal)}
+.btn-t:hover{background:rgba(45,212,191,.22)}
+.btn-full{width:100%}
+.btn-next{width:100%;padding:11px;background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:#fff;border:none;border-radius:var(--r12);font-size:.88rem;font-weight:600;
+  cursor:pointer;margin-top:.5rem;transition:opacity .18s;font-family:inherit}
+.btn-next:disabled{opacity:.25;cursor:default}
+.btn-next:hover:not(:disabled){opacity:.88}
+.btn-back{display:inline-flex;align-items:center;gap:4px;background:none;border:none;
+  color:var(--text3);font-size:.8rem;cursor:pointer;margin-bottom:.7rem;
+  font-family:inherit;transition:color .18s;-webkit-tap-highlight-color:transparent}
+.btn-back:hover{color:var(--text)}
+
+/* QUIZ */
+.quiz-card{background:var(--card);border:1px solid var(--border2);border-radius:var(--r22);padding:1.25rem 1rem;text-align:center}
+.quiz-char{font-size:3.8rem;font-family:var(--font-jp);color:var(--text);line-height:1.2;margin:.5rem 0;cursor:pointer}
+.quiz-txt{font-size:.85rem;color:var(--text2);margin-bottom:.9rem}
+.quiz-score{font-size:.72rem;color:var(--text3);margin-bottom:.5rem}
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:.7rem}
+.quiz-opt{padding:11px 7px;border:1px solid var(--border2);border-radius:var(--r12);
+  background:var(--card2);color:var(--text);font-size:.82rem;cursor:pointer;
+  font-family:inherit;transition:all .18s;line-height:1.3;-webkit-tap-highlight-color:transparent}
+.quiz-opt:hover:not(:disabled){border-color:var(--accent2);color:var(--accent2)}
+.quiz-opt.ok{background:rgba(74,222,128,.12);border-color:var(--green);color:var(--green)}
+.quiz-opt.ng{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}
+.quiz-fb{font-size:.85rem;font-weight:600;min-height:20px;margin:.4rem 0}
+.quiz-fb.ok{color:var(--green)}.quiz-fb.ng{color:var(--red)}
+.ex-type-row{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-bottom:.9rem}
+.ex-t-btn{padding:5px 13px;border-radius:99px;border:1px solid var(--border2);
+  background:var(--card2);color:var(--text2);font-size:.75rem;cursor:pointer;transition:all .18s;font-family:inherit}
+.ex-t-btn.on{background:var(--accent2);border-color:var(--accent2);color:#fff;font-weight:600}
+
+/* STROKE */
+.stroke-type-row{display:flex;gap:6px;margin-bottom:.8rem}
+.sc-grid{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:1rem}
+.sc-btn{width:42px;height:42px;border-radius:var(--r8);border:1px solid var(--border);
+  background:var(--card);font-size:1.35rem;font-family:var(--font-jp);color:var(--text2);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;-webkit-tap-highlight-color:transparent}
+.sc-btn:hover,.sc-btn:active{border-color:var(--accent2);color:var(--text)}
+.sc-btn.sel{border-color:var(--accent);background:rgba(192,132,252,.1);color:var(--accent)}
+.sc-btn.done{border-color:var(--teal);background:rgba(45,212,191,.07)}
+.sc-display{text-align:center;background:var(--card);border:1px solid var(--border2);
+  border-radius:var(--r22);padding:1.4rem;margin-bottom:1rem}
+.sc-char{font-size:7rem;font-family:var(--font-jp);color:var(--text);line-height:1;cursor:pointer;display:block}
+.coming-soon{text-align:center;padding:3rem 1rem;color:var(--text3)}
+.cs-icon{font-size:2.5rem;margin-bottom:.75rem}
 </style>
 </head>
 <body>
 
-<!-- ── DRAWER OVERLAY + DRAWER ── -->
-<div class="drawer-overlay" id="drawer-overlay"></div>
+<!-- MASK + DRAWER -->
+<div class="mask" id="mask"></div>
 <div class="drawer" id="drawer">
-  <div class="drawer-head">
+  <div class="dr-head">
     <h2>📚 Irodori Courses</h2>
-    <button class="drawer-close" id="drawer-close">✕</button>
+    <button class="dr-close" id="dr-close">✕</button>
   </div>
-  <div class="drawer-section">
-    <div class="drawer-sec-title">Books</div>
-    <a class="drawer-item active" href="index.html">
-      <span class="drawer-icon">🌸</span>
-      <div class="drawer-item-text">
-        <div class="drawer-item-title">Starter A1 — 入門</div>
-        <div class="drawer-item-sub">18 Lessons • Beginner</div>
-      </div>
-      <span class="drawer-badge new">Current</span>
-    </a>
-    <a class="drawer-item" href="elementary1.html">
-      <span class="drawer-icon">🌿</span>
-      <div class="drawer-item-text">
-        <div class="drawer-item-title">Elementary 1 A2 — 初級1</div>
-        <div class="drawer-item-sub">18 Lessons • JFT-Basic</div>
-      </div>
-    </a>
+  <div class="dr-sec">
+    <div class="dr-sec-title">Books</div>
+    <div class="dr-item" style="border-color:var(--accent)">
+      <span class="dr-icon">🌸</span>
+      <div><div class="dr-title">Starter A1 — 入門</div><div class="dr-sub">18 Lessons</div></div>
+      <span class="dr-badge">Now</span>
+    </div>
+    <div class="dr-item" onclick="alert('Elementary 1 coming soon!')">
+      <span class="dr-icon">🌿</span>
+      <div><div class="dr-title">Elementary 1 A2</div><div class="dr-sub">JFT-Basic — coming soon</div></div>
+    </div>
   </div>
-  <div class="drawer-divider"></div>
-  <div class="drawer-section">
-    <div class="drawer-sec-title">Tools</div>
-    <div class="drawer-item" onclick="navTo('stroke');Drawer.close()">
-      <span class="drawer-icon">🖊️</span>
-      <div class="drawer-item-text">
-        <div class="drawer-item-title">Stroke Order</div>
-        <div class="drawer-item-sub">Hiragana + Katakana</div>
-      </div>
+  <div class="dr-divider"></div>
+  <div class="dr-sec">
+    <div class="dr-sec-title">Tools</div>
+    <div class="dr-item" onclick="goStroke();closeDrawer()">
+      <span class="dr-icon">🖊️</span>
+      <div><div class="dr-title">Stroke Order</div><div class="dr-sub">Hiragana + Katakana</div></div>
+    </div>
+    <div class="dr-item" onclick="goReview();closeDrawer()">
+      <span class="dr-icon">🧠</span>
+      <div><div class="dr-title">Review All</div><div class="dr-sub">Random practice</div></div>
     </div>
   </div>
 </div>
 
-<!-- ── NAVBAR ── -->
+<!-- NAVBAR -->
 <nav class="navbar">
-  <div class="navbar-left">
-    <button class="nav-icon-btn" id="home-btn" onclick="navTo('lessons')" title="Home">🏠</button>
+  <div class="nb-left">
+    <button class="icon-btn" onclick="goHome()" title="Home">🏠</button>
     <div>
-      <div class="navbar-title">いろどり 入門 A1</div>
-      <div class="navbar-subtitle">Irodori Starter</div>
+      <div class="nb-title">いろどり 入門 A1</div>
+      <div class="nb-sub">Irodori Starter</div>
     </div>
   </div>
-  <button class="nav-icon-btn" id="menu-btn" title="Menu">☰</button>
+  <button class="icon-btn" id="menu-btn" title="Menu">☰</button>
 </nav>
 
-<!-- ══════════════════════════════════════
-     LESSON LIST SCREEN
-     ══════════════════════════════════════ -->
-<div id="main" class="page">
-  <div class="book-banner">
-    <div class="book-cover">🌸</div>
-    <div class="book-info">
-      <h2>Starter (A1) — 入門</h2>
-      <p>Irodori: Japanese for Life in Japan</p>
+<!-- SCREEN: LESSONS -->
+<div class="screen active" id="s-lessons">
+  <div class="page">
+    <div class="book-banner">
+      <div class="book-cover">🌸</div>
+      <div class="book-info">
+        <h2>Starter (A1) — 入門</h2>
+        <p>Irodori: Japanese for Life in Japan · 18 Lessons</p>
+      </div>
     </div>
+    <div id="book-prog"></div>
+    <div id="book-stats"></div>
+    <div id="lesson-list"></div>
   </div>
-
-  <div id="book-prog"></div>
-  <div id="book-stats"></div>
-  <div id="lesson-list"></div>
 </div>
 
-<!-- ══════════════════════════════════════
-     LESSON DETAIL SCREEN
-     ══════════════════════════════════════ -->
-<div id="lesson-view" class="page">
-  <button class="btn-back" onclick="navTo('lessons')">← All Lessons</button>
-  <div id="lesson-content"></div>
+<!-- SCREEN: LESSON DETAIL -->
+<div class="screen" id="s-detail">
+  <div class="page">
+    <button class="btn-back" onclick="goHome()">← All Lessons</button>
+    <div id="detail-content"></div>
+  </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     EXERCISE SCREEN
-     ══════════════════════════════════════ -->
-<div id="exercise-view" class="page">
-  <button class="btn-back" id="ex-back-btn">← Back to Lesson</button>
-  <div id="exercise-content"></div>
+<!-- SCREEN: EXERCISE -->
+<div class="screen" id="s-exercise">
+  <div class="page">
+    <button class="btn-back" id="ex-back">← Back</button>
+    <div id="exercise-content"></div>
+  </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     STROKE ORDER SCREEN
-     ══════════════════════════════════════ -->
-<div id="stroke-view" class="page">
-  <button class="btn-back" onclick="navTo('lessons')">← Back</button>
-  <div class="page-title">🖊️ Stroke Order</div>
-  <div class="page-sub">Click a character to see how to write it</div>
-  <div id="stroke-content"></div>
+<!-- SCREEN: STROKE -->
+<div class="screen" id="s-stroke">
+  <div class="page">
+    <button class="btn-back" onclick="goHome()">← Back</button>
+    <div style="font-size:1.1rem;font-weight:700;margin-bottom:.25rem">🖊️ Stroke Order</div>
+    <div style="font-size:.75rem;color:var(--text3);margin-bottom:1rem">Tap a character to see how to write it</div>
+    <div id="stroke-content"></div>
+  </div>
 </div>
 
-<!-- ── BOTTOM TAB BAR ── -->
-<nav class="tab-bar">
-  <button class="tab-item active" data-route="lessons" onclick="navTo('lessons')">
-    <span class="tab-icon">📖</span>Lessons
+<!-- SCREEN: REVIEW -->
+<div class="screen" id="s-review">
+  <div class="page">
+    <button class="btn-back" onclick="goHome()">← All Lessons</button>
+    <div id="review-content"></div>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<nav class="tabbar">
+  <button class="tab-btn on" id="tab-lessons" onclick="goHome()">
+    <span class="ti">📖</span>Lessons
   </button>
-  <button class="tab-item" data-route="stroke" onclick="navTo('stroke')">
-    <span class="tab-icon">🖊️</span>Stroke
+  <button class="tab-btn" id="tab-stroke" onclick="goStroke()">
+    <span class="ti">🖊️</span>Stroke
   </button>
-  <button class="tab-item" data-route="review" onclick="navTo('review')">
-    <span class="tab-icon">🧠</span>Review
+  <button class="tab-btn" id="tab-review" onclick="goReview()">
+    <span class="ti">🧠</span>Review
   </button>
 </nav>
 
-<script src="js/app.js"></script>
-<script src="data/starter.js"></script>
 <script>
-/* ═════════════════════════════════════════
-   STARTER A1 — Page Controller
-   ═════════════════════════════════════════ */
+// ═══════════════════════════════════════
+// DATA — all 18 Starter A1 lessons
+// ═══════════════════════════════════════
+const STARTER_TOPICS = [
+  {en:'Starting to Speak Japanese', jp:'はじめての日本語', lessons:[1,2]},
+  {en:'About Myself',               jp:'私のこと',         lessons:[3,4]},
+  {en:'Favourite Food',             jp:'好きな食べ物',     lessons:[5,6]},
+  {en:'Home and Work',              jp:'家と職場',         lessons:[7,8]},
+  {en:'Daily Life',                 jp:'毎日の生活',       lessons:[9,10]},
+  {en:'My Favourite Things',        jp:'私の好きなこと',   lessons:[11,12]},
+  {en:'Walking Around Town',        jp:'街を歩く',         lessons:[13,14]},
+  {en:'In a Shop',                  jp:'店で',             lessons:[15,16]},
+  {en:'On a Day Off',               jp:'休みの日に',       lessons:[17,18]},
+];
 
-const BOOK = 'starter';
-let currentLesson = null;
-let currentExType = 'match';
-let exQueue = [], exIdx = 0, exScore = 0, exTotal = 0;
+const LESSONS = [
+{num:1,topic:'Starting to Speak Japanese',en:'Good morning!',jp:'おはようございます',
+ cando:['Can exchange greetings when you meet someone.','Can say goodbye when leaving.','Can thank someone or apologize to them.','Can understand message stickers such as "good morning" or "thanks."'],
+ activities:[{icon:'🗣️',jp:'こんにちは',en:'Greetings'},{icon:'🗣️',jp:'お先に失礼します',en:'Saying goodbye'},{icon:'🗣️',jp:'ありがとうございます',en:'Thanking'},{icon:'📖',jp:'メッセージスタンプ',en:'Message stickers'}],
+ phrases:[{jp:'こんにちは',r:'Konnichiwa',en:'Hello'},{jp:'おはようございます',r:'Ohayou gozaimasu',en:'Good morning'},{jp:'こんばんは',r:'Konbanwa',en:'Good evening'},{jp:'さようなら',r:'Sayounara',en:'Goodbye'},{jp:'ありがとうございます',r:'Arigatou gozaimasu',en:'Thank you'},{jp:'すみません',r:'Sumimasen',en:'Excuse me / Sorry'},{jp:'お先に失礼します',r:'Osaki ni shitsurei shimasu',en:'I\'m leaving first'}],
+ kanji:[],
+ grammar:[],
+ tips:['Greeting gestures','"Sayoonara"','When to use "sumimasen"'],
+ exercises:[{q:'こんにちは',a:'Hello'},{q:'おはようございます',a:'Good morning'},{q:'こんばんは',a:'Good evening'},{q:'さようなら',a:'Goodbye'},{q:'ありがとうございます',a:'Thank you'},{q:'すみません',a:'Excuse me / Sorry'}]},
 
-// ── Navigation ───────────────────────────────────────────────────
-function navTo(view, params = {}) {
-  ['main','lesson-view','exercise-view','stroke-view'].forEach(id => hide(id));
-  document.querySelectorAll('.tab-item').forEach(t =>
-    t.classList.toggle('active', t.dataset.route === view));
-  if (view === 'lessons')  { show('main'); renderLessonList(); }
-  if (view === 'lesson')   { show('lesson-view'); renderLessonDetail(params.num); }
-  if (view === 'exercise') { show('exercise-view'); startExercise(params.num, params.type || 'match'); }
-  if (view === 'stroke')   { show('stroke-view'); renderStroke(); }
-  if (view === 'review')   { show('exercise-view'); startRandomReview(); }
+{num:2,topic:'Starting to Speak Japanese',en:"I'm sorry, I don't really understand.",jp:'すみません、よくわかりません',
+ cando:['Can ask someone to say something again if you don\'t understand.','Can answer when asked if you speak Japanese.','Can ask how to say something in Japanese.'],
+ activities:[{icon:'🗣️',jp:'もういちど、お願いします',en:'Asking to repeat'},{icon:'🗣️',jp:'日本語、できますか？',en:'Language check'},{icon:'🗣️',jp:'これは日本語で何と言いますか？',en:'Asking a word'}],
+ phrases:[{jp:'もういちど、お願いします',r:'Mou ichido, onegai shimasu',en:'One more time, please'},{jp:'ゆっくり言ってください',r:'Yukkuri itte kudasai',en:'Please say it slowly'},{jp:'わかりました',r:'Wakarimashita',en:'I understand'},{jp:'わかりません',r:'Wakarimasen',en:'I don\'t understand'},{jp:'日本語、できますか？',r:'Nihongo, dekimasu ka?',en:'Do you speak Japanese?'},{jp:'これは日本語で何と言いますか？',r:'Kore wa nihongo de nan to iimasu ka?',en:'How do you say this in Japanese?'}],
+ kanji:[],grammar:[],
+ tips:['Residence card','Oden','Abbreviations','Mosquitoes'],
+ exercises:[{q:'もういちど',a:'One more time'},{q:'ゆっくり',a:'Slowly'},{q:'わかりました',a:'I understand'},{q:'わかりません',a:'I don\'t understand'},{q:'日本語、できますか？',a:'Do you speak Japanese?'}]},
+
+{num:3,topic:'About Myself',en:'Nice to meet you.',jp:'よろしくお願いします',
+ cando:['Can give a simple self-introduction (name, country).','Can write your name and country on a name tag.','Can ask and answer about name and hometown.','Can fill in an application form.'],
+ activities:[{icon:'🗣️',jp:'はじめまして',en:'Self-introduction'},{icon:'✍️',jp:'名札',en:'Name tag'},{icon:'🗣️',jp:'ご出身は？',en:'Asking hometown'},{icon:'✍️',jp:'申込書',en:'Application form'}],
+ phrases:[{jp:'はじめまして',r:'Hajimemashite',en:'Nice to meet you'},{jp:'よろしくお願いします',r:'Yoroshiku onegai shimasu',en:'Please treat me well'},{jp:'私は___です',r:'Watashi wa ___ desu',en:'I am ___'},{jp:'___から来ました',r:'___ kara kimashita',en:'I came from ___'},{jp:'ご出身は？',r:'Go-shusshin wa?',en:'Where are you from?'}],
+ kanji:[{jp:'名前',r:'namae',en:'Name'},{jp:'国',r:'kuni',en:'Country'},{jp:'私',r:'watashi',en:'I / Me'}],
+ grammar:[{pat:'N です',ex:'トンです。',m:'I am [N]'},{pat:'【place】から来ました',ex:'ブラジルから来ました。',m:'I came from [place]'},{pat:'N は？',ex:'お名前は？',m:'What about [N]?'},{pat:'N じゃないです',ex:'ベトナムじゃないです。',m:'Not [N]'}],
+ tips:['Japanese characters','How to call someone','Japanese era names'],
+ exercises:[{q:'はじめまして',a:'Nice to meet you'},{q:'よろしくお願いします',a:'Please treat me well'},{q:'名前',a:'Name'},{q:'国',a:'Country'},{q:'私',a:'I / Me'}]},
+
+{num:4,topic:'About Myself',en:'I live in Tokyo.',jp:'東京に住んでいます',
+ cando:['Can understand family introductions.','Can ask and answer about where someone lives or how old they are.','Can read a short SNS post by a friend.'],
+ activities:[{icon:'🎧',jp:'夫と子どもです',en:'Family'},{icon:'🗣️',jp:'25歳です',en:'Age'},{icon:'🗣️',jp:'ペットのジョンです',en:'Pets'},{icon:'📖',jp:'友だちと海！',en:'SNS post'}],
+ phrases:[{jp:'何歳ですか？',r:'Nan-sai desu ka?',en:'How old are you?'},{jp:'___歳です',r:'___-sai desu',en:'I am ___ years old'},{jp:'___に住んでいます',r:'___ ni sunde imasu',en:'I live in ___'},{jp:'家族は___人です',r:'Kazoku wa ___-nin desu',en:'My family has ___ people'}],
+ kanji:[{jp:'父',r:'chichi',en:'Father'},{jp:'母',r:'haha',en:'Mother'},{jp:'子ども',r:'kodomo',en:'Child'},{jp:'日本',r:'nihon',en:'Japan'}],
+ grammar:[{pat:'N1 と N2',ex:'夫と子どもです。',m:'N1 and N2'},{pat:'【場所】に住んでいます',ex:'フィリピンに住んでいます。',m:'Live in [place]'},{pat:'N1 の N2',ex:'私の母です。',m:'N1\'s N2'}],
+ tips:['Major Japanese cities','Asking age','Japanese sea'],
+ exercises:[{q:'父',a:'Father'},{q:'母',a:'Mother'},{q:'子ども',a:'Child'},{q:'何歳ですか？',a:'How old are you?'},{q:'___に住んでいます',a:'I live in ___'}]},
+
+{num:5,topic:'Favourite Food',en:'I like udon.',jp:'うどんが好きです',
+ cando:['Can answer about food likes/dislikes.','Can talk about what you drink.','Can describe how often you eat meals.','Can post a food photo on SNS.'],
+ activities:[{icon:'🗣️',jp:'魚、好きですか？',en:'Food preferences'},{icon:'🗣️',jp:'わさびは、ちょっと…',en:'Soft refusal'},{icon:'🗣️',jp:'お茶、飲みますか？',en:'Drinks'},{icon:'🗣️',jp:'朝ご飯は、あまり食べません',en:'Meals'},{icon:'✍️',jp:'今日の朝ご飯',en:'SNS food post'}],
+ phrases:[{jp:'___が好きです',r:'___ ga suki desu',en:'I like ___'},{jp:'___は好きじゃないです',r:'___ wa suki ja nai desu',en:'I don\'t like ___'},{jp:'___はちょっと…',r:'___ wa chotto...',en:'___ is a bit... (soft refusal)'},{jp:'よく食べます',r:'Yoku tabemasu',en:'I often eat'},{jp:'あまり食べません',r:'Amari tabemasen',en:'I don\'t eat much'}],
+ kanji:[{jp:'水',r:'mizu',en:'Water'},{jp:'食べます',r:'tabemasu',en:'Eat'},{jp:'飲みます',r:'nomimasu',en:'Drink'}],
+ grammar:[{pat:'N が好きです',ex:'肉と野菜が好きです。',m:'Like [N]'},{pat:'N はちょっと…',ex:'わさびは、ちょっと…。',m:'Soft refusal'},{pat:'あまり V-ません',ex:'朝ご飯は、あまり食べません。',m:'Rarely / Not much [V]'}],
+ tips:['Sushi & sashimi','Tempura','Udon & soba','Curry','Japanese breakfast'],
+ exercises:[{q:'好き',a:'Like'},{q:'きらい',a:'Dislike'},{q:'よく食べます',a:'I often eat'},{q:'あまり食べません',a:'I don\'t eat much'},{q:'水',a:'Water'}]},
+
+{num:6,topic:'Favourite Food',en:'A cheeseburger, please.',jp:'チーズバーガーください',
+ cando:['Can read a fast-food menu.','Can order at a restaurant.','Can say what you will eat.','Can order food and drinks.','Can understand a restaurant sign.'],
+ activities:[{icon:'📖',jp:'ハンバーガー店のメニュー',en:'Menu reading'},{icon:'🗣️',jp:'こちらでおめしあがりですか？',en:'Ordering'},{icon:'🗣️',jp:'私はカレーにします',en:'Deciding'},{icon:'🗣️',jp:'枝豆２つください',en:'Ordering items'},{icon:'📖',jp:'飲食店の看板',en:'Restaurant sign'}],
+ phrases:[{jp:'___、ください',r:'___, kudasai',en:'___, please'},{jp:'___、お願いします',r:'___, onegai shimasu',en:'___, please (polite)'},{jp:'___にします',r:'___ ni shimasu',en:'I\'ll have ___'},{jp:'___はありますか？',r:'___ wa arimasu ka?',en:'Do you have ___?'}],
+ kanji:[{jp:'魚',r:'sakana',en:'Fish'},{jp:'肉',r:'niku',en:'Meat'},{jp:'好き(な)',r:'suki(na)',en:'Favourite'}],
+ grammar:[{pat:'N、ください',ex:'ホットコーヒー、ください。',m:'[N], please'},{pat:'N にします',ex:'私は、うどんにします。',m:'I\'ll have [N]'},{pat:'N（は）ありますか？',ex:'マヨネーズ、ありますか？',m:'Do you have [N]?'}],
+ tips:['Japanese hamburger shops','Meal tickets','Izakaya','Karaage','Beer & snacks'],
+ exercises:[{q:'ください',a:'Please give me'},{q:'にします',a:'I\'ll have / go with'},{q:'魚',a:'Fish'},{q:'肉',a:'Meat'},{q:'ありますか？',a:'Do you have...?'}]},
+
+{num:7,topic:'Home and Work',en:'There are four rooms.',jp:'部屋が４つあります',
+ cando:['Can understand a home tour.','Can check if a room has what\'s needed.','Can briefly describe your home.','Can read appliance labels.'],
+ activities:[{icon:'🎧',jp:'ここは台所です',en:'Room tour'},{icon:'🗣️',jp:'電子レンジはありますか？',en:'Asking about items'},{icon:'🗣️',jp:'ちょっとせまいです',en:'Describing home'},{icon:'🗣️',jp:'アパートに住んでいます',en:'Where you live'},{icon:'📖',jp:'洗濯機・エアコンのボタン',en:'Appliance labels'}],
+ phrases:[{jp:'ここは___です',r:'Koko wa ___ desu',en:'This is ___'},{jp:'___があります',r:'___ ga arimasu',en:'There is/are ___'},{jp:'___はありますか？',r:'___ wa arimasu ka?',en:'Is there ___?'},{jp:'___はありません',r:'___ wa arimasen',en:'There is no ___'}],
+ kanji:[{jp:'家',r:'ie',en:'House'},{jp:'新しい',r:'atarashii',en:'New'},{jp:'広い',r:'hiroi',en:'Spacious'},{jp:'古い',r:'furui',en:'Old'}],
+ grammar:[{pat:'【場所】に N があります',ex:'ここに階段があります。',m:'There is [N] at [place]'},{pat:'（N は）ありません',ex:'トースターはありません。',m:'There is no [N]'},{pat:'ナ A-です / イ A-いです',ex:'家は静かです。',m:'Is [Adj]'}],
+ tips:['Japanese homes','Futon','Types of housing','Japanese address system'],
+ exercises:[{q:'あります',a:'There is / There are'},{q:'ありません',a:'There is not'},{q:'広い',a:'Spacious'},{q:'せまい',a:'Narrow / Small'},{q:'家',a:'House'}]},
+
+{num:8,topic:'Home and Work',en:'Is Mr Yamada there?',jp:'山田さんはどこにいますか？',
+ cando:['Can understand a workplace tour.','Can ask where a person is.','Can ask where something is.','Can understand room signs.'],
+ activities:[{icon:'🎧',jp:'ここで打ち合わせをします',en:'Office tour'},{icon:'🗣️',jp:'食堂にいます',en:'Where is someone?'},{icon:'🗣️',jp:'はさみは、そこにあります',en:'Where is something?'},{icon:'📖',jp:'部屋の表示',en:'Room signs'}],
+ phrases:[{jp:'___はどこにいますか？',r:'___ wa doko ni imasu ka?',en:'Where is ___ (person)?'},{jp:'___はどこにありますか？',r:'___ wa doko ni arimasu ka?',en:'Where is ___ (thing)?'},{jp:'___にいます',r:'___ ni imasu',en:'Is at ___ (person)'},{jp:'___の中にあります',r:'___ no naka ni arimasu',en:'Is inside ___'}],
+ kanji:[{jp:'上',r:'ue',en:'Above'},{jp:'下',r:'shita',en:'Below'},{jp:'中',r:'naka',en:'Inside'}],
+ grammar:[{pat:'【人】は【場所】にいます',ex:'山田さんは、食堂にいます。',m:'[Person] is at [place]'},{pat:'【もの】は【場所】にあります',ex:'はさみは、そこにあります。',m:'[Thing] is at [place]'},{pat:'N の【位置】にあります',ex:'引き出しの中にあります。',m:'Is in/on/under [N]'}],
+ tips:['Uniform','Tea','FAX'],
+ exercises:[{q:'います',a:'Is here (person/animal)'},{q:'いません',a:'Is not here (person)'},{q:'上',a:'Above / On top'},{q:'下',a:'Below / Under'},{q:'中',a:'Inside'}]},
+
+{num:9,topic:'Daily Life',en:'Lunch break is from 12 to 1.',jp:'12時から1時まで昼休みです',
+ cando:['Can ask/answer about wake-up and bedtime.','Can understand a daily schedule.','Can read a whiteboard schedule.','Can agree on a meeting time.'],
+ activities:[{icon:'🗣️',jp:'何時に起きますか？',en:'Daily schedule'},{icon:'🎧',jp:'１日のスケジュール',en:'Schedule talk'},{icon:'📖',jp:'スケジュールボード',en:'Board'},{icon:'🗣️',jp:'私は日曜日がいいです',en:'Day preference'}],
+ phrases:[{jp:'何時に___ますか？',r:'Nanji ni ___ masu ka?',en:'What time do you ___?'},{jp:'___時に起きます',r:'___-ji ni okimasu',en:'I get up at ___ o\'clock'},{jp:'___から___まで',r:'___ kara ___ made',en:'From ___ to ___'},{jp:'___がいいです',r:'___ ga ii desu',en:'___ is good for me'}],
+ kanji:[{jp:'月',r:'getsuyoubi',en:'Monday'},{jp:'火',r:'kayoubi',en:'Tuesday'},{jp:'水',r:'suiyoubi',en:'Wednesday'},{jp:'木',r:'mokuyoubi',en:'Thursday'},{jp:'金',r:'kin-youbi',en:'Friday'},{jp:'土',r:'doyoubi',en:'Saturday'},{jp:'日',r:'nichiyoubi',en:'Sunday'}],
+ grammar:[{pat:'【時間】に V-ます',ex:'5時に起きます。',m:'At [time] [V]'},{pat:'【時間】から【時間】まで',ex:'12時から１時まで、昼休みです。',m:'From [time] to [time]'},{pat:'【日時】がいいです',ex:'私は、土曜日がいいです。',m:'[Day] is good for me'}],
+ tips:['Morning assembly','Public pool','Movies'],
+ exercises:[{q:'月曜日',a:'Monday'},{q:'火曜日',a:'Tuesday'},{q:'水曜日',a:'Wednesday'},{q:'木曜日',a:'Thursday'},{q:'金曜日',a:'Friday'},{q:'土曜日',a:'Saturday'},{q:'日曜日',a:'Sunday'}]},
+
+{num:10,topic:'Daily Life',en:'Could you lend me a stapler?',jp:'ホチキス貸してください',
+ cando:['Can understand short work instructions.','Can confirm key points of instructions.','Can read a work memo.','Can ask to borrow something.','Can read a checklist.'],
+ activities:[{icon:'🎧',jp:'ちょっと手伝ってください',en:'Asking for help'},{icon:'🗣️',jp:'すみません、いくつですか？',en:'Confirming'},{icon:'📖',jp:'仕事のメモ',en:'Work memo'},{icon:'🗣️',jp:'スマホの充電器、ありますか？',en:'Borrowing'},{icon:'📖',jp:'チェックリスト',en:'Checklist'}],
+ phrases:[{jp:'___、貸してください',r:'___, kashite kudasai',en:'Please lend me ___'},{jp:'___、借りてもいいですか？',r:'___, karite mo ii desu ka?',en:'May I borrow ___?'},{jp:'___てください',r:'___ te kudasai',en:'Please ___ (request)'},{jp:'ですね',r:'desu ne',en:'Right? (confirmation)'}],
+ kanji:[{jp:'朝',r:'asa',en:'Morning'},{jp:'昼',r:'hiru',en:'Noon'},{jp:'夜',r:'yoru',en:'Night'},{jp:'〜時',r:'~ji',en:'O\'clock'},{jp:'〜枚',r:'~mai',en:'Counter (flat things)'}],
+ grammar:[{pat:'V-てください',ex:'手伝ってください。',m:'Please do [V]'},{pat:'N ですね〈確認〉',ex:'はい、30枚ですね。',m:'That\'s [N], right? (confirmation)'},{pat:'N、貸してください',ex:'ホチキス、貸してください。',m:'Please lend me [N]'}],
+ tips:['Japanese-English loanwords','Smartphone charging','24-hour system'],
+ exercises:[{q:'貸してください',a:'Please lend me'},{q:'借りてもいいですか？',a:'May I borrow...?'},{q:'朝',a:'Morning'},{q:'昼',a:'Noon'},{q:'夜',a:'Night'}]},
+
+{num:11,topic:'My Favourite Things',en:'What manga do you like?',jp:'どんなマンガが好きですか？',
+ cando:['Can briefly answer about your hobbies.','Can ask about hobbies and likes.','Can ask about days off activities.','Can read an SNS profile.'],
+ activities:[{icon:'🗣️',jp:'趣味は何ですか？',en:'Hobbies'},{icon:'🗣️',jp:'「ドラゴンボール」が大好きです',en:'Recommending'},{icon:'🗣️',jp:'うちでゆっくりします',en:'Days off'},{icon:'📖',jp:'SNSのプロフィール',en:'SNS profile'}],
+ phrases:[{jp:'趣味は___です',r:'Shumi wa ___ desu',en:'My hobby is ___'},{jp:'どんな___が好きですか？',r:'Donna ___ ga suki desu ka?',en:'What kind of ___ do you like?'},{jp:'たいてい___します',r:'Taitei ___ shimasu',en:'I usually ___'},{jp:'ときどき___します',r:'Tokidoki ___ shimasu',en:'I sometimes ___'}],
+ kanji:[{jp:'読みます',r:'yomimasu',en:'Read'},{jp:'聞きます',r:'kikimasu',en:'Listen'},{jp:'見ます',r:'mimasu',en:'Watch'},{jp:'本',r:'hon',en:'Book'}],
+ grammar:[{pat:'どんな N',ex:'どんなスポーツが好きですか？',m:'What kind of [N]?'},{pat:'あまり〜ません',ex:'スポーツは、あまり好きじゃないです。',m:'Not really...'},{pat:'たいてい/よく/ときどき',ex:'休みの日は、たいてい、映画を見ます。',m:'Usually/Often/Sometimes'}],
+ tips:['Manga','Japanese games','Literature','Soccer/Rugby','Pachinko'],
+ exercises:[{q:'趣味',a:'Hobby'},{q:'どんな',a:'What kind of'},{q:'たいてい',a:'Usually'},{q:'ときどき',a:'Sometimes'},{q:'読みます',a:'Read'}]},
+
+{num:12,topic:'My Favourite Things',en:'Would you like to go drinking together?',jp:'いっしょに飲みに行きませんか？',
+ cando:['Can read an event notice.','Can ask about going to an event.','Can invite someone and give availability.','Can reply to an invitation.'],
+ activities:[{icon:'📖',jp:'イベントの案内',en:'Event notice'},{icon:'🗣️',jp:'来週、夏祭りがありますね',en:'Suggesting'},{icon:'🗣️',jp:'いっしょに行きましょう',en:'Inviting'},{icon:'✍️',jp:'誘いの返事',en:'Reply'}],
+ phrases:[{jp:'いっしょに___ませんか？',r:'Issho ni ___ masen ka?',en:'Shall we ___ together?'},{jp:'いっしょに___ましょう',r:'Issho ni ___ mashou',en:'Let\'s ___ together'},{jp:'___に行きます',r:'___ ni ikimasu',en:'I will go to ___'}],
+ kanji:[{jp:'〜年',r:'~nen',en:'Year'},{jp:'〜月',r:'~gatsu',en:'Month'},{jp:'〜日',r:'~nichi',en:'Day of month'},{jp:'今日',r:'kyou',en:'Today'}],
+ grammar:[{pat:'V-ませんか？',ex:'いっしょに行きませんか？',m:'Shall we [V]?'},{pat:'V-ましょう',ex:'また今度行きましょう。',m:'Let\'s [V]'},{pat:'V-に行きます',ex:'焼肉を食べに行きませんか？',m:'Go to [V]'}],
+ tips:['Summer festivals','Japanese mountains','Karate'],
+ exercises:[{q:'〜ませんか？',a:'Shall we...?'},{q:'〜ましょう',a:'Let\'s...'},{q:'今日',a:'Today'},{q:'来週',a:'Next week'}]},
+
+{num:13,topic:'Walking Around Town',en:'Does this bus go to the airport?',jp:'このバスは空港に行きますか？',
+ cando:['Can ask if a train/bus goes to your destination.','Can understand announcements and ask for help.','Can say how you commute.','Can ask for directions.','Can understand station signs.'],
+ activities:[{icon:'🗣️',jp:'何番線ですか？',en:'Train platform'},{icon:'🗣️',jp:'すみません、今どこですか？',en:'Location'},{icon:'🗣️',jp:'1時間ぐらいかかります',en:'Journey time'},{icon:'🎧',jp:'市役所まで、どうやって行きますか？',en:'Directions'},{icon:'📖',jp:'駅の中の表示',en:'Station signs'}],
+ phrases:[{jp:'このバスは___に行きますか？',r:'Kono basu wa ___ ni ikimasu ka?',en:'Does this bus go to ___?'},{jp:'___まで___で行きます',r:'___ made ___ de ikimasu',en:'I go to ___ by ___'},{jp:'___かかります',r:'___ kakarimasu',en:'It takes ___'},{jp:'何番線ですか？',r:'Nan-bansen desu ka?',en:'Which platform?'}],
+ kanji:[{jp:'東',r:'higashi',en:'East'},{jp:'西',r:'nishi',en:'West'},{jp:'南',r:'minami',en:'South'},{jp:'北',r:'kita',en:'North'},{jp:'乗ります',r:'norimasu',en:'Board'},{jp:'降ります',r:'orimasu',en:'Get off'}],
+ grammar:[{pat:'【乗り物】で来ます',ex:'バイクで来ます。',m:'Come by [transport]'},{pat:'【時間】かかります',ex:'1時間半かかります。',m:'It takes [time]'},{pat:'【場所】から【場所】まで',ex:'ここから駅まで。',m:'From [place] to [place]'}],
+ tips:['Commuting','How to use public transport'],
+ exercises:[{q:'東',a:'East'},{q:'西',a:'West'},{q:'南',a:'South'},{q:'北',a:'North'},{q:'乗ります',a:'Board / Ride'},{q:'降ります',a:'Get off'}]},
+
+{num:14,topic:'Walking Around Town',en:"That's a big building.",jp:'大きな建物ですね',
+ cando:['Can ask for toilets or ATMs.','Can tell someone where you are by phone.','Can express impressions of places.','Can understand restaurant signs.'],
+ activities:[{icon:'🗣️',jp:'トイレはどこですか？',en:'Asking locations'},{icon:'🗣️',jp:'今、改札の前にいます',en:'Telling location'},{icon:'🗣️',jp:'ここは十条商店街です',en:'Describing place'},{icon:'📖',jp:'街にある看板',en:'Town signs'}],
+ phrases:[{jp:'___はどこですか？',r:'___ wa doko desu ka?',en:'Where is ___?'},{jp:'この近くに___はありますか？',r:'Kono chikaku ni ___ wa arimasu ka?',en:'Is there ___ near here?'},{jp:'___の前にいます',r:'___ no mae ni imasu',en:'I am in front of ___'}],
+ kanji:[{jp:'大きい',r:'ookii',en:'Big'},{jp:'小さい',r:'chiisai',en:'Small'},{jp:'高い',r:'takai',en:'High/Expensive'},{jp:'前',r:'mae',en:'Front'},{jp:'後ろ',r:'ushiro',en:'Behind'}],
+ grammar:[{pat:'【場所】に N（は）ありますか？',ex:'この近くに、コンビニはありますか？',m:'Is there [N] near [place]?'},{pat:'N の【位置】にいます',ex:'改札の前にいます。',m:'I am at the [position] of [N]'}],
+ tips:['Coin lockers','Vending machines','ATM','Japanese rivers'],
+ exercises:[{q:'大きい',a:'Big'},{q:'小さい',a:'Small'},{q:'高い',a:'High / Expensive'},{q:'前',a:'Front / Before'},{q:'後ろ',a:'Behind'}]},
+
+{num:15,topic:'In a Shop',en:"I'd like a battery.",jp:'電池がほしいんですが…',
+ cando:['Can ask where to buy something.','Can use a floor guide.','Can ask which floor an item is on.','Can comment on products.','Can understand mall signs.'],
+ activities:[{icon:'🗣️',jp:'どこで買えますか？',en:'Where to buy'},{icon:'📖',jp:'フロアガイド',en:'Floor guide'},{icon:'🗣️',jp:'カメラは何階ですか？',en:'Asking floor'},{icon:'🗣️',jp:'わあ、かっこいいですね',en:'Commenting'},{icon:'📖',jp:'ショッピングセンターの表示',en:'Mall signs'}],
+ phrases:[{jp:'___がほしいんですが…',r:'___ ga hoshii n desu ga...',en:'I want ___, but... (seeking help)'},{jp:'何階ですか？',r:'Nan-kai desu ka?',en:'Which floor?'},{jp:'どこで買えますか？',r:'Doko de kaemasu ka?',en:'Where can I buy it?'},{jp:'かっこいい！',r:'Kakkoii!',en:'Cool!'},{jp:'かわいい！',r:'Kawaii!',en:'Cute!'}],
+ kanji:[{jp:'入口',r:'iriguchi',en:'Entrance'},{jp:'出口',r:'deguchi',en:'Exit'},{jp:'〜階',r:'~kai',en:'Floor'},{jp:'安い',r:'yasui',en:'Cheap'}],
+ grammar:[{pat:'N がほしいんですが…',ex:'電池がほしいんですが、どこで買えますか？',m:'I want [N], but... (seeking help)'},{pat:'ナ A-ですね！ / イ A-いですね！',ex:'このコート、おしゃれですね！',m:'How [Adj]! (exclamation)'}],
+ tips:['Various Japanese shops','Counting floors','Umbrellas','Elevator buttons'],
+ exercises:[{q:'入口',a:'Entrance'},{q:'出口',a:'Exit'},{q:'安い',a:'Cheap'},{q:'かっこいい',a:'Cool / Awesome'},{q:'かわいい',a:'Cute'}]},
+
+{num:16,topic:'In a Shop',en:'How much is this?',jp:'これ、いくらですか？',
+ cando:['Can understand prices.','Can ask prices.','Can state quantity when buying.','Can answer convenience store register questions.','Can understand discount signs.'],
+ activities:[{icon:'🎧',jp:'1,980円です',en:'Listening to prices'},{icon:'🗣️',jp:'あのTシャツ、いくらですか？',en:'Asking price'},{icon:'🗣️',jp:'ひき肉200gください',en:'Buying by weight'},{icon:'🗣️',jp:'こちら、温めますか？',en:'At register'},{icon:'📖',jp:'割引表示',en:'Discount signs'}],
+ phrases:[{jp:'これ、いくらですか？',r:'Kore, ikura desu ka?',en:'How much is this?'},{jp:'___円です',r:'___-en desu',en:'It\'s ___ yen'},{jp:'___gください',r:'___g kudasai',en:'___ grams, please'},{jp:'___個ください',r:'___-ko kudasai',en:'___ pieces, please'}],
+ kanji:[{jp:'一',r:'ichi',en:'1'},{jp:'二',r:'ni',en:'2'},{jp:'三',r:'san',en:'3'},{jp:'四',r:'yon',en:'4'},{jp:'五',r:'go',en:'5'},{jp:'六',r:'roku',en:'6'},{jp:'七',r:'nana',en:'7'},{jp:'八',r:'hachi',en:'8'},{jp:'九',r:'kyuu',en:'9'},{jp:'十',r:'juu',en:'10'}],
+ grammar:[{pat:'【これ／それ／あれ】いくらですか？',ex:'これ、いくらですか？',m:'How much is this/that?'},{pat:'【この／その／あの】N',ex:'そのカレンダー、いくらですか？',m:'This/That/That [N]'}],
+ tips:['Japanese currency','Asking prices','Electronic money'],
+ exercises:[{q:'一',a:'1'},{q:'二',a:'2'},{q:'三',a:'3'},{q:'四',a:'4'},{q:'五',a:'5'},{q:'六',a:'6'},{q:'七',a:'7'},{q:'八',a:'8'},{q:'九',a:'9'},{q:'十',a:'10'},{q:'いくらですか？',a:'How much is it?'}]},
+
+{num:17,topic:'On a Day Off',en:'I went to see a movie.',jp:'映画を見に行きました',
+ cando:['Can briefly answer about days off.','Can ask/answer about weekend activities.','Can read an SNS post about a day out.','Can read a price list.','Can send a simple message.'],
+ activities:[{icon:'🗣️',jp:'週末は何をしましたか？',en:'Weekend talk'},{icon:'🗣️',jp:'楽しかったです',en:'Impressions'},{icon:'📖',jp:'家族で水族館に行きました',en:'SNS post'},{icon:'📖',jp:'料金表',en:'Price list'},{icon:'✍️',jp:'今、家に着きました',en:'Sending message'}],
+ phrases:[{jp:'週末は何をしましたか？',r:'Shūmatsu wa nani wo shimashita ka?',en:'What did you do on the weekend?'},{jp:'___に行きました',r:'___ ni ikimashita',en:'I went to ___'},{jp:'楽しかったです',r:'Tanoshikatta desu',en:'It was fun'},{jp:'おもしろかったです',r:'Omoshirokatta desu',en:'It was interesting'},{jp:'まあまあでした',r:'Mā mā deshita',en:'It was so-so'}],
+ kanji:[{jp:'百',r:'hyaku',en:'100'},{jp:'千',r:'sen',en:'1,000'},{jp:'万',r:'man',en:'10,000'},{jp:'〜円',r:'~en',en:'Yen'},{jp:'映画',r:'eiga',en:'Movie'},{jp:'休み',r:'yasumi',en:'Day off'}],
+ grammar:[{pat:'V-ました',ex:'家でゆっくりしました。',m:'Did [V] (past)'},{pat:'V-ませんでした',ex:'何もしませんでした。',m:'Did not [V] (past negative)'},{pat:'イ A-かったです',ex:'楽しかったです。',m:'Was [Adj] (past)'}],
+ tips:['Godzilla','Aquarium','Manga cafes'],
+ exercises:[{q:'百',a:'100'},{q:'千',a:'1,000'},{q:'万',a:'10,000'},{q:'楽しかったです',a:'It was fun'},{q:'おもしろかったです',a:'It was interesting'},{q:'まあまあでした',a:'It was so-so'}]},
+
+{num:18,topic:'On a Day Off',en:'I want to go to a hot spring.',jp:'温泉に入りたいです',
+ cando:['Can ask/answer about holiday plans.','Can briefly answer about wishes in Japan.','Can read a holiday SNS post.','Can talk about travel impressions.'],
+ activities:[{icon:'🗣️',jp:'ゴールデンウィークの予定は？',en:'Holiday plans'},{icon:'🗣️',jp:'日本で何がしたい？',en:'Wishes'},{icon:'📖',jp:'船に乗りました',en:'SNS holiday post'},{icon:'🗣️',jp:'はじめて露天風呂に入りました',en:'Sharing experience'}],
+ phrases:[{jp:'___したいです',r:'___ shitai desu',en:'I want to ___'},{jp:'___たいです',r:'___ tai desu',en:'I want to do ___'},{jp:'___へ行きたいです',r:'___ e ikitai desu',en:'I want to go to ___'},{jp:'それから',r:'Sorekara',en:'After that'},{jp:'でも',r:'Demo',en:'But / However'}],
+ kanji:[{jp:'温泉',r:'onsen',en:'Hot spring'},{jp:'予定',r:'yotei',en:'Plan'},{jp:'来週',r:'raishuu',en:'Next week'},{jp:'旅行します',r:'ryokou shimasu',en:'Travel'}],
+ grammar:[{pat:'V-たいです',ex:'炊飯器が買いたいです。',m:'Want to [V]'},{pat:'S1。それから、S2。',ex:'露天風呂に入りました。それから、温泉の近くで食べました。',m:'S1. After that, S2.'},{pat:'S1。でも、S2。',ex:'おいしかったです。でも、ちょっと高かったです。',m:'S1. But, S2.'}],
+ tips:['Golden Week','Tokyo Disneyland','Shinkansen','Mt. Fuji','Doraemon','Hot springs'],
+ exercises:[{q:'〜たいです',a:'Want to [do]'},{q:'それから',a:'After that'},{q:'でも',a:'But / However'},{q:'温泉',a:'Hot spring'},{q:'旅行します',a:'Travel'}]},
+];
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let curLesson = null, exType = 'phrases', exQ = [], exIdx = 0, exScore = 0;
+let strokeType = 'h', strokeSel = 'あ';
+const BOOK = 'starter_a1';
+
+// ═══════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function shuf(a){ return [...a].sort(()=>Math.random()-0.5); }
+
+// TTS
+let ttsVoices = [];
+if(window.speechSynthesis){
+  const loadV = ()=>{ ttsVoices = speechSynthesis.getVoices().filter(v=>v.lang.startsWith('ja')); };
+  loadV(); speechSynthesis.addEventListener('voiceschanged',loadV);
+}
+function speak(txt){
+  if(!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(txt);
+  u.lang='ja-JP'; u.rate=0.85;
+  if(ttsVoices.length) u.voice=ttsVoices[0];
+  speechSynthesis.speak(u);
+}
+
+// Progress
+function isDone(n){ return localStorage.getItem(BOOK+'_l'+n)==='1'; }
+function setDone(n,v){ v?localStorage.setItem(BOOK+'_l'+n,'1'):localStorage.removeItem(BOOK+'_l'+n); }
+function bookProg(){ let d=0; LESSONS.forEach(l=>{ if(isDone(l.num)) d++; }); return {done:d,total:18,pct:Math.round(d/18*100)}; }
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
   window.scrollTo(0,0);
 }
+function setTab(id){
+  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('on'));
+  $(id)&&$(id).classList.add('on');
+}
+function goHome(){ showScreen('s-lessons'); setTab('tab-lessons'); renderLessons(); }
+function goDetail(num){ curLesson=num; showScreen('s-detail'); setTab('tab-lessons'); renderDetail(num); }
+function goExercise(num,type){ curLesson=num; exType=type||'phrases'; showScreen('s-exercise'); setTab(null); startExercise(); }
+function goStroke(){ showScreen('s-stroke'); setTab('tab-stroke'); renderStroke(); }
+function goReview(){ showScreen('s-review'); setTab('tab-review'); startReview(); }
+function openDrawer(){ $('drawer').classList.add('on'); $('mask').classList.add('on'); }
+function closeDrawer(){ $('drawer').classList.remove('on'); $('mask').classList.remove('on'); }
 
-// ── Lesson List ──────────────────────────────────────────────────
-function renderLessonList() {
-  const prog = Progress.getBookProgress(BOOK, STARTER.meta.lessons);
-  el('book-prog').innerHTML = renderProgBar(prog.pct, 'book-prog-bar');
-  el('book-stats').innerHTML = renderStatsGrid(prog.done, prog.total, 'Lessons');
-
-  let html = '';
-  STARTER.topics.forEach(topic => {
-    html += `<div class="section-label">▶ ${topic.en}</div>`;
-    topic.lessons.forEach(lnum => {
-      const lesson = STARTER.lessons[lnum - 1];
-      const done = Progress.isLessonDone(BOOK, lnum);
-      const pills = lesson.cando.slice(0,2).map(c =>
-        `<span class="lc-pill">${c.substring(0,55)}${c.length>55?'…':''}</span>`).join('');
-      html += `
-        <div class="lesson-card${done?' done':''}" onclick="navTo('lesson',{num:${lnum}})">
-          <div class="lc-badge">Lesson ${lnum}</div>
-          <div class="lc-body">
-            <div class="lc-en">${esc(lesson.en)}</div>
-            <div class="lc-jp">${esc(lesson.jp)}</div>
-            <div class="lc-pills">${pills}</div>
-          </div>
-          ${done ? '<span class="lc-check">✓</span>' : ''}
-        </div>`;
+// ═══════════════════════════════════════
+// LESSON LIST
+// ═══════════════════════════════════════
+function renderLessons(){
+  const p=bookProg();
+  $('book-prog').innerHTML=`<div class="prog-wrap"><div class="prog-track"><div class="prog-bar" style="width:${Math.max(2,p.pct)}%"></div></div><div class="prog-lbl">${p.pct}%</div></div>`;
+  $('book-stats').innerHTML=`<div class="stats">
+    <div class="stat"><div class="stat-n">${p.total}</div><div class="stat-l">Lessons</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--green)">${p.done}</div><div class="stat-l">Done</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--accent)">${p.total-p.done}</div><div class="stat-l">To go</div></div>
+  </div>`;
+  let html='';
+  STARTER_TOPICS.forEach(topic=>{
+    html+=`<div class="sec-label">▶ ${esc(topic.en)}</div>`;
+    topic.lessons.forEach(lnum=>{
+      const L=LESSONS[lnum-1], done=isDone(lnum);
+      const pills=L.cando.slice(0,2).map(c=>`<span class="lc-pill">${esc(c.substring(0,52))}${c.length>52?'…':''}</span>`).join('');
+      html+=`<div class="lcard${done?' done':''}" onclick="goDetail(${lnum})">
+        <div class="lc-badge">Lesson ${lnum}</div>
+        <div class="lc-body">
+          <div class="lc-en">${esc(L.en)}</div>
+          <div class="lc-jp">${esc(L.jp)}</div>
+          <div class="lc-pills">${pills}</div>
+        </div>
+        ${done?'<span class="lc-check">✓</span>':''}
+      </div>`;
     });
   });
-  el('lesson-list').innerHTML = html;
+  $('lesson-list').innerHTML=html;
 }
 
-// ── Lesson Detail ────────────────────────────────────────────────
-function renderLessonDetail(num) {
-  currentLesson = num;
-  const L = STARTER.lessons[num - 1];
-  const done = Progress.isLessonDone(BOOK, num);
-  const topic = STARTER.topics.find(t => t.lessons.includes(num));
+// ═══════════════════════════════════════
+// LESSON DETAIL
+// ═══════════════════════════════════════
+function renderDetail(num){
+  const L=LESSONS[num-1], done=isDone(num);
+  const topic=STARTER_TOPICS.find(t=>t.lessons.includes(num));
 
-  const html = `
-    <div class="detail-card">
-      <div class="detail-topic">▶ ${esc(topic?.en || '')}</div>
-      <div class="detail-num">Lesson ${num} of ${STARTER.meta.lessons} — ${STARTER.meta.book} (${STARTER.meta.level})</div>
-      <div class="detail-title">${esc(L.en)}</div>
-      <div class="detail-jp">${esc(L.jp)}</div>
+  const candoHtml=L.cando.map(c=>`<div class="cando-item"><span class="cando-icon">✓</span><span class="cando-txt">${esc(c)}</span></div>`).join('');
+  const actHtml=L.activities.map(a=>`<div class="act-row">
+    <span class="act-icon">${a.icon}</span>
+    <div style="flex:1;min-width:0"><div class="act-txt">${esc(a.jp)}</div><div class="act-en">${esc(a.en)}</div></div>
+    <button class="act-play" onclick="speak('${esc(a.jp).replace(/'/g,"\\'")}')">▶</button>
+  </div>`).join('');
+  const phraseHtml=(L.phrases||[]).map(p=>`<div class="phrase-row" onclick="speak('${esc(p.jp).replace(/'/g,"\\'")}')">
+    <span class="ph-jp">${esc(p.jp)}</span>
+    <div class="ph-right"><div class="ph-r">${esc(p.r)}</div><div class="ph-en">${esc(p.en)}</div></div>
+    <span class="ph-play">▶</span>
+  </div>`).join('');
+  const kanjiHtml=L.kanji&&L.kanji.length
+    ?`<div class="kanji-grid">${L.kanji.map(k=>`<div class="kchip" onclick="speak('${esc(k.jp).replace(/'/g,"\\'")}')"><div class="kc-jp">${esc(k.jp)}</div><div class="kc-r">${esc(k.r)}</div><div class="kc-en">${esc(k.en)}</div></div>`).join('')}</div>`
+    :'<p style="font-size:.78rem;color:var(--text3)">No kanji in this lesson</p>';
+  const gramHtml=L.grammar&&L.grammar.length
+    ?L.grammar.map(g=>`<div class="gram-item"><div class="gi-pat">${esc(g.pat)}</div><div class="gi-ex">${esc(g.ex)}</div><div class="gi-m">${esc(g.m)}</div></div>`).join('')
+    :'<p style="font-size:.78rem;color:var(--text3)">Grammar notes in book</p>';
+  const tipsHtml=L.tips&&L.tips.length
+    ?`<div class="tips-box">${L.tips.map(t=>`<span class="tips-tag">${esc(t)}</span>`).join('')}</div>`:'';
 
-      <div class="detail-section">
-        <div class="detail-sec-hdr">🎯 Can-do Goals</div>
-        ${renderCanDoList(L.cando)}
-      </div>
+  $('detail-content').innerHTML=`<div class="dcard">
+    <div class="d-topic">▶ ${esc(topic?.en||'')}</div>
+    <div class="d-num">Lesson ${num} / 18 · Starter (A1)</div>
+    <div class="d-title">${esc(L.en)}</div>
+    <div class="d-jp">${esc(L.jp)}</div>
 
-      <div class="detail-section">
-        <div class="detail-sec-hdr">✍️ Activities</div>
-        ${renderActivities(L.activities)}
-      </div>
+    <div class="d-sec"><div class="d-hdr">🎯 Can-do Goals</div>${candoHtml}</div>
+    <div class="d-sec"><div class="d-hdr">📝 Activities</div>${actHtml}</div>
+    <div class="d-sec"><div class="d-hdr">💬 Key Phrases <span style="font-size:.62rem;color:var(--text3)">(tap to hear)</span></div>${phraseHtml}</div>
+    <div class="d-sec"><div class="d-hdr">漢 Kanji Words</div>${kanjiHtml}</div>
+    <div class="d-sec"><div class="d-hdr">📖 Grammar Notes</div>${gramHtml}</div>
+    ${L.tips&&L.tips.length?`<div class="d-sec"><div class="d-hdr">🇯🇵 Life in Japan Tips</div>${tipsHtml}</div>`:''}
 
-      <div class="detail-section">
-        <div class="detail-sec-hdr">💬 Key Phrases</div>
-        ${L.key_phrases ? renderPhrases(L.key_phrases, 'Audio.speak') : '<p style="color:var(--text3);font-size:0.8rem">See activities above</p>'}
-      </div>
-
-      ${(L.kanji && L.kanji.length) ? `
-      <div class="detail-section">
-        <div class="detail-sec-hdr">漢 Kanji Words</div>
-        ${renderKanjiGrid(L.kanji)}
-      </div>` : ''}
-
-      ${(L.grammar && L.grammar.length) ? `
-      <div class="detail-section">
-        <div class="detail-sec-hdr">📖 Grammar Notes</div>
-        ${renderGrammar(L.grammar)}
-      </div>` : ''}
-
-      <div class="detail-section">
-        <div class="detail-sec-hdr">🇯🇵 Tips for Life in Japan</div>
-        ${renderTips(L.tips)}
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:0.5rem;flex-wrap:wrap">
-        <button class="btn btn-primary" style="flex:1;min-width:130px" onclick="navTo('exercise',{num:${num},type:'match'})">
-          🧠 Practice Exercises
-        </button>
-        <button class="btn btn-teal btn-full" onclick="toggleDone(${num})" id="done-btn">
-          ${done ? '✓ Completed — undo' : '✓ Mark Complete'}
-        </button>
-      </div>
-    </div>`;
-
-  el('lesson-content').innerHTML = html;
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:.5rem">
+      <button class="btn btn-p" style="flex:1;min-width:120px" onclick="goExercise(${num},'phrases')">🧠 Practice</button>
+      <button class="btn btn-t btn-full" id="done-btn-${num}" onclick="toggleDone(${num})">
+        ${done?'✓ Completed — undo':'✓ Mark Complete'}
+      </button>
+    </div>
+  </div>`;
 }
 
-function toggleDone(num) {
-  const done = Progress.isLessonDone(BOOK, num);
-  Progress.setLessonDone(BOOK, num, !done);
-  const btn = el('done-btn');
-  if (btn) btn.textContent = (!done) ? '✓ Completed — undo' : '✓ Mark Complete';
+function toggleDone(num){
+  setDone(num,!isDone(num));
+  const btn=$('done-btn-'+num);
+  if(btn) btn.textContent=isDone(num)?'✓ Completed — undo':'✓ Mark Complete';
 }
 
-// ── Exercise Engine ──────────────────────────────────────────────
-function buildExQueue(lessonNum, type) {
-  const L = STARTER.lessons[lessonNum - 1];
-  let items = [];
-
-  if (type === 'match' || type === 'jp-en') {
-    // Key phrase matching
-    if (L.key_phrases && L.key_phrases.length) {
-      L.key_phrases.forEach(p => items.push({ q: p.jp, a: p.en, type: 'match-jp', jp: p.jp }));
-    }
-    // Exercise items
-    if (L.exercises) {
-      L.exercises.filter(e => e.type === 'match').forEach(e =>
-        items.push({ q: e.q, a: e.a, type: 'match' }));
-    }
-  } else if (type === 'grammar') {
-    if (L.grammar && L.grammar.length) {
-      L.grammar.forEach(g => items.push({ q: g.pattern, a: g.meaning, type: 'match', example: g.example }));
-    }
-  } else if (type === 'kanji') {
-    if (L.kanji && L.kanji.length) {
-      L.kanji.forEach(k => items.push({ q: k.jp, a: k.en, type: 'kanji-match', r: k.r }));
-    }
-  }
-
-  return ExerciseEngine.shuffle(items).slice(0, 12);
+// ═══════════════════════════════════════
+// EXERCISES
+// ═══════════════════════════════════════
+function buildPool(num, type){
+  const L=LESSONS[num-1];
+  let items=[];
+  if(type==='phrases') (L.phrases||[]).forEach(p=>items.push({q:p.jp,a:p.en,isJP:true}));
+  else if(type==='grammar') (L.grammar||[]).forEach(g=>items.push({q:g.pat,a:g.m,isJP:false,ex:g.ex}));
+  else if(type==='kanji') (L.kanji||[]).forEach(k=>items.push({q:k.jp,a:k.en,isJP:true,r:k.r}));
+  else (L.exercises||[]).forEach(e=>items.push({q:e.q,a:e.a,isJP:false}));
+  return shuf(items).slice(0,10);
 }
-
-function buildWrongPool(lessonNum, type) {
-  // Pull answers from all lessons for wrong options
-  const pool = [];
-  STARTER.lessons.forEach(L => {
-    if (type === 'kanji') {
-      (L.kanji || []).forEach(k => pool.push(k.en));
-    } else if (type === 'grammar') {
-      (L.grammar || []).forEach(g => pool.push(g.meaning));
-    } else {
-      (L.key_phrases || []).forEach(p => pool.push(p.en));
-    }
+function allAnswers(type){
+  const ans=new Set();
+  LESSONS.forEach(L=>{
+    if(type==='grammar') (L.grammar||[]).forEach(g=>ans.add(g.m));
+    else if(type==='kanji') (L.kanji||[]).forEach(k=>ans.add(k.en));
+    else (L.phrases||[]).forEach(p=>ans.add(p.en));
+    (L.exercises||[]).forEach(e=>ans.add(e.a));
   });
-  return [...new Set(pool)];
+  return [...ans];
 }
 
-function startExercise(lessonNum, type) {
-  currentLesson = lessonNum;
-  currentExType = type;
-  exQueue = buildExQueue(lessonNum, type);
-  exIdx = 0; exScore = 0; exTotal = exQueue.length;
-
-  el('ex-back-btn').onclick = () => navTo('lesson', { num: lessonNum });
-
-  if (!exQueue.length) {
-    el('exercise-content').innerHTML = `
-      <div class="coming-soon">
-        <div class="cs-icon">📭</div>
-        <h3>No exercises yet for this lesson</h3>
-        <p>Go back and read the lesson content first!</p>
-        <button class="btn btn-secondary" style="margin-top:1rem" onclick="navTo('lesson',{num:${lessonNum}})">← Back to Lesson</button>
-      </div>`;
-    return;
+function startExercise(){
+  $('ex-back').onclick=()=>goDetail(curLesson);
+  exQ=buildPool(curLesson,exType); exIdx=0; exScore=0;
+  if(!exQ.length){
+    $('exercise-content').innerHTML=`<div style="text-align:center;padding:2rem;color:var(--text3)">
+      <div style="font-size:2rem;margin-bottom:.75rem">📭</div>
+      <div>No exercises for this type yet</div>
+      <button class="btn btn-s" style="margin-top:1rem" onclick="goDetail(${curLesson})">← Back</button>
+    </div>`; return;
   }
-
-  renderExercise();
+  renderQ();
 }
 
-function startRandomReview() {
-  // Pick random exercises from all lessons
-  currentLesson = null;
-  currentExType = 'match';
-  el('ex-back-btn').onclick = () => navTo('lessons');
-
-  const allItems = [];
-  STARTER.lessons.forEach((L, i) => {
-    (L.key_phrases || []).slice(0, 3).forEach(p =>
-      allItems.push({ q: p.jp, a: p.en, type: 'match-jp', jp: p.jp, lessonNum: i+1 }));
+function renderQ(){
+  if(exIdx>=exQ.length){ showResult(); return; }
+  const item=exQ[exIdx];
+  const pool=shuf(allAnswers(exType).filter(a=>a!==item.a)).slice(0,3);
+  const opts=shuf([item.a,...pool]);
+  $('exercise-content').innerHTML=`<div class="quiz-card">
+    <div class="ex-type-row">
+      <button class="ex-t-btn${exType==='phrases'?' on':''}" onclick="exType='phrases';startExercise()">Phrases</button>
+      <button class="ex-t-btn${exType==='kanji'?' on':''}" onclick="exType='kanji';startExercise()">Kanji</button>
+      <button class="ex-t-btn${exType==='grammar'?' on':''}" onclick="exType='grammar';startExercise()">Grammar</button>
+    </div>
+    <div class="quiz-score">Q ${exIdx+1}/${exQ.length} · Score: ${exScore}</div>
+    ${item.isJP
+      ?`<div class="quiz-char" onclick="speak('${esc(item.q).replace(/'/g,"\\'")}')"> ${esc(item.q)}</div>
+         <div class="quiz-txt">${item.r?`(${esc(item.r)}) `:''}What does this mean? (tap to hear)</div>`
+      :`<div style="font-size:1rem;font-weight:600;color:var(--text);margin:1rem 0;font-family:var(--font-jp)">${esc(item.q)}</div>
+        ${item.ex?`<div style="font-size:.75rem;color:var(--text3);margin-bottom:.75rem;font-family:var(--font-jp)">${esc(item.ex)}</div>`:''}
+        <div class="quiz-txt">Choose the correct meaning:</div>`}
+    <div class="quiz-opts" id="opts"></div>
+    <div class="quiz-fb" id="fb"></div>
+    <button class="btn-next" id="nxt" onclick="exIdx++;renderQ()" disabled>Next →</button>
+  </div>`;
+  const oc=$('opts');
+  opts.forEach(opt=>{
+    const b=document.createElement('button');
+    b.className='quiz-opt'; b.textContent=opt;
+    b.addEventListener('click',()=>{
+      if(!$('nxt').disabled) return;
+      document.querySelectorAll('.quiz-opt').forEach(x=>x.disabled=true);
+      const ok=opt===item.a;
+      b.classList.add(ok?'ok':'ng');
+      if(!ok) document.querySelectorAll('.quiz-opt').forEach(x=>{if(x.textContent===item.a)x.classList.add('ok');});
+      $('fb').textContent=ok?'✓ Correct!':'✗ Answer: '+item.a;
+      $('fb').className='quiz-fb '+(ok?'ok':'ng');
+      if(ok) exScore++;
+      $('nxt').disabled=false;
+    });
+    oc.appendChild(b);
   });
-  exQueue = ExerciseEngine.shuffle(allItems).slice(0, 15);
-  exIdx = 0; exScore = 0; exTotal = exQueue.length;
-  renderExercise();
 }
 
-function renderExercise() {
-  if (exIdx >= exQueue.length) { renderExerciseResult(); return; }
+function showResult(){
+  const pct=Math.round(exScore/exQ.length*100);
+  $('exercise-content').innerHTML=`<div class="quiz-card" style="text-align:center">
+    <div style="font-size:3rem;margin:.5rem 0">${pct>=80?'🎉':pct>=60?'💪':'📚'}</div>
+    <div style="font-size:1.1rem;font-weight:700;margin-bottom:5px">Exercise Complete!</div>
+    <div style="font-size:.9rem;color:var(--text2);margin-bottom:3px">${exScore}/${exQ.length} correct</div>
+    <div style="font-size:1.8rem;font-weight:700;color:${pct>=70?'var(--green)':'var(--amber)'};margin-bottom:1rem">${pct}%</div>
+    <button class="btn btn-p btn-full" onclick="exIdx=0;exScore=0;exQ=shuf(exQ);renderQ()" style="margin-bottom:7px">↩ Try Again</button>
+    <button class="btn btn-s btn-full" onclick="goDetail(${curLesson})">← Back to Lesson</button>
+    ${pct>=70?`<button class="btn btn-t btn-full" style="margin-top:7px" onclick="setDone(${curLesson},true);goHome()">✓ Complete & Continue →</button>`:''}
+  </div>`;
+}
 
-  const item = exQueue[exIdx];
-  const answered = false;
-  const wrongPool = buildWrongPool(currentLesson, currentExType);
-  const wrongAnswers = ExerciseEngine.shuffle(wrongPool.filter(a => a !== item.a)).slice(0, 3);
-  const opts = ExerciseEngine.shuffle([item.a, ...wrongAnswers]);
+// ═══════════════════════════════════════
+// REVIEW (random from all lessons)
+// ═══════════════════════════════════════
+function startReview(){
+  const all=[];
+  LESSONS.forEach(L=>{(L.phrases||[]).slice(0,3).forEach(p=>all.push({q:p.jp,a:p.en,isJP:true,lessonNum:L.num}));});
+  exQ=shuf(all).slice(0,15); exIdx=0; exScore=0;
+  $('ex-back').onclick=()=>{showScreen('s-review');startReview();}; // stay on review
+  $('review-content').innerHTML='<div id="exercise-content"></div>';
+  const tmp=$('exercise-content');
+  // Reuse exercise logic but render in review-content
+  renderReviewQ();
+}
 
-  const isKanji = item.type === 'kanji-match';
-  const isJP = item.type === 'match-jp';
+function renderReviewQ(){
+  if(exIdx>=exQ.length){
+    const pct=Math.round(exScore/exQ.length*100);
+    $('review-content').innerHTML=`<div class="quiz-card" style="text-align:center">
+      <div style="font-size:3rem;margin:.5rem 0">${pct>=80?'🎉':pct>=60?'💪':'📚'}</div>
+      <div style="font-size:1.1rem;font-weight:700;margin-bottom:5px">Review Complete!</div>
+      <div style="font-size:.9rem;color:var(--text2);margin-bottom:3px">${exScore}/${exQ.length} correct</div>
+      <div style="font-size:1.8rem;font-weight:700;color:${pct>=70?'var(--green)':'var(--amber)'};margin-bottom:1rem">${pct}%</div>
+      <button class="btn btn-p btn-full" onclick="startReview()" style="margin-bottom:7px">↩ New Review</button>
+      <button class="btn btn-s btn-full" onclick="goHome()">← All Lessons</button>
+    </div>`; return;
+  }
+  const item=exQ[exIdx];
+  const pool=shuf(allAnswers('phrases').filter(a=>a!==item.a)).slice(0,3);
+  const opts=shuf([item.a,...pool]);
+  $('review-content').innerHTML=`<div class="quiz-card">
+    <div style="font-size:.65rem;color:var(--accent2);margin-bottom:.5rem">🧠 REVIEW MODE · Lesson ${item.lessonNum}</div>
+    <div class="quiz-score">Q ${exIdx+1}/${exQ.length} · Score: ${exScore}</div>
+    <div class="quiz-char" onclick="speak('${esc(item.q).replace(/'/g,"\\'")}')"> ${esc(item.q)}</div>
+    <div class="quiz-txt">What does this mean? (tap to hear)</div>
+    <div class="quiz-opts" id="rev-opts"></div>
+    <div class="quiz-fb" id="rev-fb"></div>
+    <button class="btn-next" id="rev-nxt" onclick="exIdx++;renderReviewQ()" disabled>Next →</button>
+  </div>`;
+  const oc=$('rev-opts');
+  opts.forEach(opt=>{
+    const b=document.createElement('button');
+    b.className='quiz-opt'; b.textContent=opt;
+    b.addEventListener('click',()=>{
+      if(!$('rev-nxt').disabled) return;
+      document.querySelectorAll('.quiz-opt').forEach(x=>x.disabled=true);
+      const ok=opt===item.a;
+      b.classList.add(ok?'ok':'ng');
+      if(!ok) document.querySelectorAll('.quiz-opt').forEach(x=>{if(x.textContent===item.a)x.classList.add('ok');});
+      $('rev-fb').textContent=ok?'✓ Correct!':'✗ Answer: '+item.a;
+      $('rev-fb').className='quiz-fb '+(ok?'ok':'ng');
+      if(ok) exScore++;
+      $('rev-nxt').disabled=false;
+    });
+    oc.appendChild(b);
+  });
+}
 
-  el('exercise-content').innerHTML = `
-    <div class="quiz-card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
-        <div class="exercise-type-row">
-          ${currentLesson ? `
-          <button class="ex-type-btn${currentExType==='match'?' on':''}" onclick="startExercise(${currentLesson},'match')">Phrases</button>
-          <button class="ex-type-btn${currentExType==='grammar'?' on':''}" onclick="startExercise(${currentLesson},'grammar')">Grammar</button>
-          <button class="ex-type-btn${currentExType==='kanji'?' on':''}" onclick="startExercise(${currentLesson},'kanji')">Kanji</button>
-          ` : '<span style="font-size:0.75rem;color:var(--text3)">🧠 Review Mode</span>'}
+// ═══════════════════════════════════════
+// STROKE ORDER
+// ═══════════════════════════════════════
+const H=['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を','ん'];
+const K=['ア','イ','ウ','エ','オ','カ','キ','ク','ケ','コ','サ','シ','ス','セ','ソ','タ','チ','ツ','テ','ト','ナ','ニ','ヌ','ネ','ノ','ハ','ヒ','フ','ヘ','ホ','マ','ミ','ム','メ','モ','ヤ','ユ','ヨ','ラ','リ','ル','レ','ロ','ワ','ヲ','ン'];
+
+const SD={h:{
+  'あ':[[[12,32],[78,32]],[[45,15],[45,50],[32,65],[20,75]],[[54,40],[72,48],[70,65],[52,75],[33,68],[28,54],[40,43],[58,40]]],
+  'い':[[[28,22],[24,52],[28,66]],[[62,25],[66,42],[62,63],[48,74]]],
+  'う':[[[36,16],[54,16]],[[20,30],[45,19],[66,30],[68,52],[52,68],[36,72],[24,62],[20,46],[30,34],[50,30]]],
+  'え':[[[14,27],[76,27]],[[45,14],[45,52],[56,65],[63,74]],[[26,46],[40,36],[60,46],[60,63],[45,72],[26,63]]],
+  'お':[[[12,27],[78,27]],[[45,14],[45,52],[30,65],[19,76]],[[54,37],[72,46],[70,63],[52,73],[33,66],[28,52],[40,42],[60,40]]],
+  'か':[[[14,21],[46,42]],[[50,14],[50,58],[35,72],[22,78]],[[13,45],[73,45]]],
+  'き':[[[14,27],[76,27]],[[14,43],[76,43]],[[42,16],[42,60],[53,72],[60,77]],[[55,53],[74,70]]],
+  'く':[[[66,18],[28,46],[66,75]]],
+  'け':[[[28,14],[28,77]],[[28,37],[67,37],[72,44],[63,54],[44,62]]],
+  'こ':[[[22,29],[68,29]],[[22,59],[68,59],[68,68]]],
+  'さ':[[[14,27],[76,27]],[[36,31],[42,46],[34,57],[25,65]],[[52,33],[57,51],[52,65]]],
+  'し':[[[42,14],[42,63],[53,73],[62,75]]],
+  'す':[[[14,25],[76,25]],[[45,14],[45,49],[59,61],[52,73],[37,75],[25,65],[30,52],[47,47]]],
+  'せ':[[[14,25],[76,25]],[[45,14],[45,77]],[[14,53],[76,53]]],
+  'そ':[[[26,25],[65,25],[65,35],[40,39]],[[38,45],[59,38],[69,51],[64,67],[48,75],[28,67],[22,53],[40,47]]],
+  'た':[[[14,27],[76,27]],[[38,14],[38,47],[30,67]],[[14,45],[73,51],[52,75]]],
+  'ち':[[[14,29],[76,29]],[[52,20],[52,55],[38,71],[27,75]]],
+  'つ':[[[22,29],[75,29],[75,56],[52,75]]],
+  'て':[[[14,27],[76,27]],[[45,14],[45,61],[63,73]]],
+  'と':[[[36,14],[36,63]],[[36,39],[63,51]]],
+  'な':[[[14,27],[76,27]],[[38,14],[38,55],[26,69]],[[14,47],[77,47]],[[63,35],[75,45],[71,63],[57,71],[45,67],[42,55]]],
+  'に':[[[30,21],[30,53]],[[18,39],[63,39]],[[59,21],[59,63],[38,75]]],
+  'ぬ':[[[30,21],[30,61],[41,73]],[[47,27],[69,35],[69,55],[53,65],[36,61],[32,49],[45,43],[65,41]]],
+  'ね':[[[14,27],[76,27]],[[45,14],[45,53],[59,63],[53,73],[38,75],[28,67],[26,53],[40,45],[59,43]]],
+  'の':[[[51,18],[67,31],[67,57],[44,73],[26,63],[19,45],[30,28],[49,24],[65,33]]],
+  'は':[[[28,14],[28,77]],[[49,23],[69,31],[69,55],[53,65],[40,61],[36,49],[45,41],[63,39]],[[65,31],[75,45],[67,63],[52,71],[40,67],[38,55]]],
+  'ひ':[[[57,18],[71,33],[69,59],[53,71],[27,65],[19,49],[26,33],[43,26],[57,33]]],
+  'ふ':[[[14,23],[76,23]],[[28,33],[22,55],[31,69]],[[45,33],[45,67]],[[59,33],[65,55],[59,69]]],
+  'へ':[[[14,55],[45,23],[76,51]]],
+  'ほ':[[[28,14],[28,77]],[[14,31],[73,31]],[[43,39],[63,47],[61,63],[45,71],[30,65],[28,53],[41,45]],[[65,39],[74,51],[69,65],[59,73]]],
+  'ま':[[[14,29],[76,29]],[[14,45],[76,45]],[[45,37],[65,53],[59,71],[45,77],[32,69],[28,53],[41,45]]],
+  'み':[[[14,31],[67,25]],[[45,21],[49,53],[59,63],[65,67],[59,73],[45,73],[30,63],[23,49],[33,39],[49,39]]],
+  'む':[[[24,33],[40,27],[40,57],[32,69]],[[14,43],[77,43]],[[61,35],[75,45],[69,63],[57,71],[44,67],[42,55]]],
+  'め':[[[28,31],[53,23],[69,35],[65,57],[47,67],[28,59],[23,45],[36,39],[57,39]],[[63,39],[75,53],[67,67]]],
+  'も':[[[14,33],[76,33]],[[14,45],[76,45]],[[45,35],[65,49],[59,67],[45,75],[32,67],[28,51],[41,45]]],
+  'や':[[[24,31],[45,23],[67,31],[61,59],[42,75]],[[13,31],[39,25]],[[66,18],[66,65],[57,73]]],
+  'ゆ':[[[24,29],[24,67]],[[41,25],[67,33],[67,59],[45,71],[32,63],[28,51],[41,43],[63,41]]],
+  'よ':[[[30,27],[73,27]],[[51,18],[51,57],[61,69],[55,77],[42,77],[30,67],[26,53],[39,49],[55,47]]],
+  'ら':[[[22,27],[69,27]],[[45,18],[49,53],[57,67],[51,77],[38,77],[27,69]]],
+  'り':[[[32,21],[28,55],[35,67]],[[59,21],[61,55],[51,69],[40,73]]],
+  'る':[[[24,27],[69,27],[71,45],[53,53],[36,51],[28,61],[37,73],[55,73],[67,65]]],
+  'れ':[[[28,14],[28,77]],[[49,25],[69,35],[65,55],[49,63],[36,59],[30,49],[41,43],[65,41]]],
+  'ろ':[[[22,27],[69,27],[69,53],[53,63],[36,59],[28,45],[41,37],[67,35]]],
+  'わ':[[[28,14],[28,77]],[[47,23],[69,31],[67,55],[49,65],[36,61],[32,47],[45,41],[65,39]]],
+  'を':[[[14,25],[76,25]],[[14,39],[76,39]],[[45,29],[45,53],[59,67],[49,77],[34,77],[23,65],[21,51],[36,45],[59,43]]],
+  'ん':[[[34,29],[57,21],[69,33],[63,55],[44,71],[28,71],[19,61]]],
+},k:{
+  'ア':[[[13,29],[77,29]],[[45,18],[30,75]]],'イ':[[[28,25],[46,51]],[[59,14],[59,77]]],
+  'ウ':[[[40,14],[50,14]],[[20,31],[71,31],[71,63],[45,77]]],'エ':[[[16,29],[74,29]],[[45,29],[45,63]],[[16,63],[74,63]]],
+  'オ':[[[13,29],[77,29]],[[45,14],[45,63]],[[18,49],[65,63]]],'カ':[[[13,31],[77,31]],[[40,14],[40,77]],[[40,45],[69,45],[69,65],[55,75]]],
+  'キ':[[[13,29],[77,29]],[[13,45],[77,45]],[[45,14],[45,77]]],'ク':[[[34,25],[67,25],[67,43]],[[44,18],[24,75]]],
+  'ケ':[[[13,27],[77,27]],[[45,14],[45,53]],[[13,45],[69,45],[69,53],[51,63]]],'コ':[[[20,27],[71,27],[71,39]],[[20,65],[71,65]]],
+  'サ':[[[13,29],[77,29]],[[34,14],[34,63]],[[57,14],[57,63]]],'シ':[[[28,27],[22,39]],[[41,39],[34,51]],[[59,18],[65,41],[53,67],[38,75]]],
+  'ス':[[[13,27],[77,27]],[[45,27],[45,53],[59,65],[45,75],[32,69],[30,53],[45,45]]],'セ':[[[13,25],[77,25]],[[45,14],[45,53],[27,67]],[[13,53],[69,53]]],
+  'ソ':[[[30,23],[22,39]],[[57,18],[67,37],[43,75]]],'タ':[[[13,27],[77,27]],[[45,14],[45,49]],[[13,45],[69,51],[49,75]]],
+  'チ':[[[13,29],[77,29]],[[13,45],[77,45]],[[53,18],[53,59],[37,73],[24,75]]],'ツ':[[[24,29],[18,43]],[[43,25],[36,39]],[[63,18],[71,41],[55,67],[38,75]]],
+  'テ':[[[13,27],[77,27]],[[45,14],[45,51]],[[13,45],[77,45]]],'ト':[[[36,14],[36,77]],[[36,39],[65,53]]],
+  'ナ':[[[13,31],[77,31]],[[45,14],[45,77]]],'ニ':[[[24,31],[66,31]],[[16,61],[74,61]]],
+  'ヌ':[[[13,31],[77,31]],[[45,18],[65,41],[59,63],[40,73],[25,65],[21,49],[38,37],[65,33]]],'ネ':[[[13,27],[77,27]],[[45,14],[45,53]],[[45,45],[22,63]],[[45,45],[69,63]]],
+  'ノ':[[[63,14],[30,75]]],'ハ':[[[38,25],[22,75]],[[53,21],[69,63]]],
+  'ヒ':[[[28,14],[28,77]],[[28,31],[69,31]],[[28,61],[69,61]]],'フ':[[[18,25],[73,25],[73,39]],[[56,25],[38,75]]],
+  'ヘ':[[[13,55],[45,23],[77,51]]],'ホ':[[[13,29],[77,29]],[[45,14],[45,77]],[[45,53],[22,69]],[[45,53],[69,69]]],
+  'マ':[[[13,27],[77,27]],[[53,18],[53,55],[36,71],[22,75]]],'ミ':[[[22,29],[69,29]],[[16,45],[74,45]],[[22,61],[69,61]]],
+  'ム':[[[28,21],[28,53],[45,71]],[[45,71],[67,49],[63,25]]],'メ':[[[22,25],[53,51]],[[65,18],[30,75]]],
+  'モ':[[[13,27],[77,27]],[[45,14],[45,53]],[[13,53],[77,53]]],'ヤ':[[[28,35],[20,63]],[[36,25],[75,25],[65,49]],[[51,25],[38,75]]],
+  'ユ':[[[28,27],[77,27],[77,39]],[[53,27],[53,61]],[[13,61],[77,61]]],'ヨ':[[[32,25],[77,25],[77,39]],[[32,45],[77,45]],[[32,65],[77,65]],[[32,25],[32,77]]],
+  'ラ':[[[18,27],[73,27]],[[49,18],[51,53],[38,69],[23,75]]],'リ':[[[30,21],[26,63],[37,73]],[[59,14],[59,77]]],
+  'ル':[[[28,21],[28,57],[41,67]],[[51,21],[65,41],[53,63],[38,73]]],'レ':[[[36,14],[36,65],[57,75]]],
+  'ロ':[[[24,27],[67,27],[67,39]],[[67,27],[67,67]],[[24,67],[67,67]],[[24,27],[24,67]]],'ワ':[[[16,27],[75,27],[75,39]],[[45,27],[36,63],[22,75]]],
+  'ヲ':[[[13,25],[77,25]],[[13,39],[77,39]],[[45,29],[45,59],[28,75]]],'ン':[[[32,29],[24,43]],[[55,18],[69,37],[41,75]]],
+}};
+
+const COLS=['#5B9EFF','#FF6B35','#2DD4A0','#C77DFF','#FF5555','#F0C040'];
+function makePath(pts){
+  if(pts.length<2)return'';
+  let d=`M${pts[0][0]},${pts[0][1]}`;
+  if(pts.length===2) d+=` L${pts[1][0]},${pts[1][1]}`;
+  else{for(let i=1;i<pts.length-1;i++){const mx=(pts[i][0]+pts[i+1][0])/2,my=(pts[i][1]+pts[i+1][1])/2;d+=` Q${pts[i][0]},${pts[i][1]} ${mx},${my}`;}d+=` L${pts[pts.length-1][0]},${pts[pts.length-1][1]}`;}
+  return d;
+}
+function strokeSVG(char,big){
+  const type=H.includes(char)?'h':'k', data=SD[type]&&SD[type][char];
+  const sz=big?200:70;
+  let svg=`<svg viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg" style="width:${sz}px;height:${sz}px;display:block">`;
+  svg+=`<line x1="45" y1="3" x2="45" y2="87" stroke="rgba(255,255,255,0.07)" stroke-width="0.5" stroke-dasharray="3,3"/>`;
+  svg+=`<line x1="3" y1="45" x2="87" y2="45" stroke="rgba(255,255,255,0.07)" stroke-width="0.5" stroke-dasharray="3,3"/>`;
+  if(!data){svg+=`</svg>`;return svg;}
+  data.forEach((pts,si)=>{
+    const col=COLS[si%COLS.length], sw=big?2.5:2;
+    svg+=`<path d="${makePath(pts)}" stroke="${col}" stroke-width="${sw}" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>`;
+    const n=pts.length,p1=pts[n-2],p2=pts[n-1],ang=Math.atan2(p2[1]-p1[1],p2[0]-p1[0]),al=big?6:4;
+    svg+=`<polygon points="${p2[0]},${p2[1]} ${p2[0]-al*Math.cos(ang-.5)},${p2[1]-al*Math.sin(ang-.5)} ${p2[0]-al*Math.cos(ang+.5)},${p2[1]-al*Math.sin(ang+.5)}" fill="${col}" opacity="0.95"/>`;
+    const nr=big?6:4.5,fs=big?7:5.5;
+    svg+=`<circle cx="${pts[0][0]}" cy="${pts[0][1]}" r="${nr}" fill="rgba(10,12,22,0.8)" stroke="${col}" stroke-width="1.2"/>`;
+    svg+=`<text x="${pts[0][0]}" y="${pts[0][1]}" text-anchor="middle" dominant-baseline="central" font-size="${fs}" font-weight="bold" fill="${col}">${si+1}</text>`;
+  });
+  svg+=`</svg>`;return svg;
+}
+
+function renderStroke(){
+  const chars=strokeType==='h'?H:K;
+  let html=`<div class="stroke-type-row">
+    <button class="btn${strokeType==='h'?' btn-p':' btn-s'}" onclick="strokeType='h';renderStroke()">ひらがな</button>
+    <button class="btn${strokeType==='k'?' btn-p':' btn-s'}" onclick="strokeType='k';renderStroke()">カタカナ</button>
+  </div>
+  <div class="sc-grid">${chars.map(c=>`<button class="sc-btn${c===strokeSel?' sel':''}" onclick="strokeSel='${c}';renderStroke()">${c}</button>`).join('')}</div>
+  <div class="sc-display">
+    <div style="font-size:.7rem;color:var(--text3);margin-bottom:.5rem">${strokeType==='h'?'Hiragana':'Katakana'} — tap character to hear</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap">
+      <div style="position:relative;cursor:pointer" onclick="speak('${strokeSel}')">
+        <div style="font-size:6.5rem;font-family:var(--font-jp);color:var(--text);line-height:1;position:relative">
+          ${strokeSel}
+          <div style="position:absolute;top:0;left:0;width:100%;height:100%">${strokeSVG(strokeSel,true)}</div>
         </div>
       </div>
-
-      <div class="quiz-score">Q ${exIdx+1}/${exTotal} · Score: ${exScore}</div>
-
-      ${isJP || isKanji ? `
-        <div class="quiz-q-char" id="q-char" style="cursor:pointer" onclick="Audio.speak('${esc(item.jp||item.q).replace(/'/g,"\\'")}')">
-          ${esc(item.jp || item.q)}
-        </div>
-        <div class="quiz-q-text">${isKanji ? `Reading: ${esc(item.r||'?')} · ` : ''}What does this mean?</div>
-      ` : `
-        <div class="quiz-q-text" style="font-size:1rem;font-weight:600;color:var(--text);margin:1rem 0">${esc(item.q)}</div>
-      `}
-
-      ${isJP ? `<button class="btn btn-secondary" style="margin-bottom:0.75rem;font-size:0.8rem" onclick="Audio.speak('${esc(item.jp).replace(/'/g,"\\'")}')">▶ Listen</button>` : ''}
-
-      <div class="quiz-opts" id="opts-container"></div>
-      <div class="quiz-feedback" id="ex-feedback"></div>
-      <button class="btn-next" id="ex-next" onclick="nextExercise()" disabled>Next →</button>
-    </div>`;
-
-  // Render options
-  const container = el('opts-container');
-  opts.forEach(opt => {
-    const btn = document.createElement('button');
-    btn.className = 'quiz-opt';
-    btn.textContent = opt;
-    btn.addEventListener('click', () => checkAnswer(opt, item.a, btn));
-    container.appendChild(btn);
-  });
-}
-
-function checkAnswer(chosen, correct, btn) {
-  if (el('ex-next') && !el('ex-next').disabled === false) return; // already answered
-  const fb = el('ex-feedback');
-  document.querySelectorAll('.quiz-opt').forEach(b => b.disabled = true);
-  if (chosen === correct) {
-    btn.classList.add('correct');
-    fb.textContent = '✓ Correct!'; fb.className = 'quiz-feedback correct';
-    exScore++;
-  } else {
-    btn.classList.add('wrong');
-    document.querySelectorAll('.quiz-opt').forEach(b => { if(b.textContent===correct) b.classList.add('correct'); });
-    fb.textContent = `✗ Answer: ${correct}`; fb.className = 'quiz-feedback wrong';
-  }
-  el('ex-next').disabled = false;
-}
-
-function nextExercise() {
-  exIdx++;
-  renderExercise();
-}
-
-function renderExerciseResult() {
-  const pct = Math.round(exScore / exTotal * 100);
-  const emoji = pct >= 80 ? '🎉' : pct >= 60 ? '💪' : '📚';
-  el('exercise-content').innerHTML = `
-    <div class="quiz-card" style="text-align:center">
-      <div style="font-size:3rem;margin:0.5rem 0">${emoji}</div>
-      <div style="font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:6px">Exercise Complete!</div>
-      <div style="font-size:0.95rem;color:var(--text2);margin-bottom:4px">${exScore}/${exTotal} correct</div>
-      <div style="font-size:2rem;font-weight:700;color:${pct>=70?'var(--green)':'var(--amber)'};margin-bottom:1rem">${pct}%</div>
-      <div style="font-size:0.82rem;color:var(--text3);margin-bottom:1.5rem">
-        ${pct>=80?'Excellent! Keep going!':pct>=60?'Good progress! Try again to improve.':'Review the lesson and try again.'}
-      </div>
-      ${currentLesson ? `
-      <button class="btn btn-primary btn-full" onclick="startExercise(${currentLesson}, currentExType)" style="margin-bottom:8px">↩ Try Again</button>
-      <button class="btn btn-secondary btn-full" onclick="navTo('lesson',{num:${currentLesson}})">← Back to Lesson</button>
-      ${pct>=70?`<button class="btn btn-teal btn-full" style="margin-top:8px" onclick="toggleDone(${currentLesson});navTo('lessons')">✓ Mark Complete & Continue →</button>`:''}
-      ` : `
-      <button class="btn btn-primary btn-full" onclick="startRandomReview()" style="margin-bottom:8px">↩ New Review</button>
-      <button class="btn btn-secondary btn-full" onclick="navTo('lessons')">← All Lessons</button>
-      `}
-    </div>`;
-}
-
-// ── Stroke Order ─────────────────────────────────────────────────
-const STROKE_DATA = {
-  h: {
-    'あ':[[12,32],[78,32],[45,15],[45,50],[32,65],[20,75],[54,40],[72,48],[70,65],[52,75],[33,68],[28,54],[40,43],[58,40]],
-    'い':[[28,22],[24,52],[28,66],[62,25],[66,42],[62,63],[48,74]],
-    'う':[[36,16],[54,16],[20,30],[45,19],[66,30],[68,52],[52,68],[36,72],[24,62],[20,46],[30,34],[50,30]],
-    'え':[[14,27],[76,27],[45,14],[45,52],[56,65],[63,74],[26,46],[40,36],[60,46],[60,63],[45,72],[26,63]],
-    'お':[[12,27],[78,27],[45,14],[45,52],[30,65],[19,76],[54,37],[72,46],[70,63],[52,73],[33,66],[28,52],[40,42],[60,40]],
-  },
-  k: {
-    'ア':[[13,29],[77,29],[45,18],[30,75]],
-    'イ':[[28,25],[46,51],[59,14],[59,77]],
-    'ウ':[[40,14],[50,14],[20,31],[71,31],[71,63],[45,77]],
-    'エ':[[16,29],[74,29],[45,29],[45,63],[16,63],[74,63]],
-    'オ':[[13,29],[77,29],[45,14],[45,63],[18,49],[65,63]],
-  }
-};
-
-const HIRAGANA_FULL = ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を','ん'];
-const KATAKANA_FULL = ['ア','イ','ウ','エ','オ','カ','キ','ク','ケ','コ','サ','シ','ス','セ','ソ','タ','チ','ツ','テ','ト','ナ','ニ','ヌ','ネ','ノ','ハ','ヒ','フ','ヘ','ホ','マ','ミ','ム','メ','モ','ヤ','ユ','ヨ','ラ','リ','ル','レ','ロ','ワ','ヲ','ン'];
-
-let strokeType = 'h', strokeSel = 'あ';
-
-function renderStroke() {
-  const chars = strokeType === 'h' ? HIRAGANA_FULL : KATAKANA_FULL;
-  const label = strokeType === 'h' ? 'Hiragana' : 'Katakana';
-
-  el('stroke-content').innerHTML = `
-    <div class="stroke-type-row">
-      <button class="btn${strokeType==='h'?' btn-primary':' btn-secondary'}" onclick="strokeType='h';renderStroke()">ひらがな</button>
-      <button class="btn${strokeType==='k'?' btn-primary':' btn-secondary'}" onclick="strokeType='k';renderStroke()">カタカナ</button>
     </div>
-    <div class="stroke-char-grid">
-      ${chars.map(c => `<button class="stroke-char-btn${c===strokeSel?' sel':''}" onclick="strokeSel='${c}';renderStroke()">${c}</button>`).join('')}
-    </div>
-    <div style="text-align:center;background:var(--card);border:1px solid var(--border2);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1rem">
-      <div style="font-size:0.72rem;color:var(--text3);margin-bottom:0.5rem">${label}</div>
-      <div style="position:relative;display:inline-block;width:180px;height:180px">
-        <div style="font-size:8rem;font-family:var(--font-jp);color:var(--text);line-height:1;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">${strokeSel}</div>
-        ${makeOverlaySVG(strokeSel)}
-      </div>
-      <div style="margin-top:0.75rem">
-        <button class="btn btn-secondary" onclick="Audio.speak('${strokeSel}')">▶ Listen</button>
-      </div>
-    </div>`;
+    <button class="btn btn-s" style="margin-top:.75rem" onclick="speak('${strokeSel}')">▶ Listen</button>
+  </div>`;
+  $('stroke-content').innerHTML=html;
 }
 
-function makeOverlaySVG(char) {
-  const type = HIRAGANA_FULL.includes(char) ? 'h' : 'k';
-  const data = STROKE_DATA[type] && STROKE_DATA[type][char];
-  if (!data) return '';
-  const COLS = ['#5B9EFF','#FF6B35','#2DD4A0','#C77DFF','#FF5555','#F0C040'];
-
-  // Simple: treat flat array as pairs → strokes based on gaps (we stored flat for simplicity)
-  // For full stroke data, extend STROKE_DATA above
-  return `<svg viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none">
-    <line x1="45" y1="5" x2="45" y2="85" stroke="rgba(255,255,255,0.06)" stroke-width="0.5" stroke-dasharray="3,3"/>
-    <line x1="5" y1="45" x2="85" y2="45" stroke="rgba(255,255,255,0.06)" stroke-width="0.5" stroke-dasharray="3,3"/>
-  </svg>`;
-}
-
-// ── Init ─────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  navTo('lessons');
-  // Drawer
-  el('menu-btn').addEventListener('click', () => {
-    el('drawer').classList.add('open');
-    el('drawer-overlay').classList.add('open');
-  });
-  el('drawer-overlay').addEventListener('click', () => {
-    el('drawer').classList.remove('open');
-    el('drawer-overlay').classList.remove('open');
-  });
-  el('drawer-close').addEventListener('click', () => {
-    el('drawer').classList.remove('open');
-    el('drawer-overlay').classList.remove('open');
-  });
-});
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+$('menu-btn').addEventListener('click', openDrawer);
+$('mask').addEventListener('click', closeDrawer);
+$('dr-close').addEventListener('click', closeDrawer);
+goHome();
 </script>
 </body>
 </html>

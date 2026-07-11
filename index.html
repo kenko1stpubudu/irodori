@@ -225,6 +225,24 @@ body{min-height:100vh;overflow-x:hidden;padding-bottom:calc(var(--tab) + env(saf
   font-family:inherit;transition:color .18s;-webkit-tap-highlight-color:transparent}
 .btn-back:hover{color:var(--text)}
 
+/* ═══ LANGUAGE SWITCHER ═══ */
+.lang-btn{min-width:38px;height:38px;padding:0 8px;border-radius:var(--r8);border:1px solid var(--border2);
+  background:var(--card);color:var(--text2);font-size:.72rem;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0;font-family:inherit}
+.lang-btn:hover,.lang-btn:active{border-color:var(--accent);color:var(--accent)}
+.lang-menu{position:fixed;top:calc(var(--nav) + 6px);right:1rem;z-index:150;
+  background:var(--surface);border:1px solid var(--border2);border-radius:var(--r12);
+  padding:5px;min-width:150px;box-shadow:0 8px 30px rgba(0,0,0,.5);
+  opacity:0;pointer-events:none;transform:translateY(-8px);transition:all .2s}
+.lang-menu.on{opacity:1;pointer-events:all;transform:translateY(0)}
+.lang-opt{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r8);
+  cursor:pointer;font-size:.82rem;color:var(--text2);transition:background .15s;
+  -webkit-tap-highlight-color:transparent}
+.lang-opt:hover{background:var(--card)}
+.lang-opt.on{background:var(--card);color:var(--accent);font-weight:700}
+.lang-flag{font-size:1rem}
+
+
 /* ═══ GAME + XP/STREAK ═══ */
 .xp-bar{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border2);
   border-radius:var(--r16);padding:.6rem .9rem;margin-bottom:1rem}
@@ -328,6 +346,20 @@ body{min-height:100vh;overflow-x:hidden;padding-bottom:calc(var(--tab) + env(saf
 
   <div class="dr-divider"></div>
   <div class="dr-sec">
+    <div class="dr-sec-title" id="dr-books-title">Books</div>
+    <div class="dr-item on">
+      <span class="dr-icon">🌸</span>
+      <div><div class="dr-title">Starter A1 — 入門</div><div class="dr-sub">Book 1 · current</div></div>
+      <span class="dr-badge">Now</span>
+    </div>
+    <a class="dr-item" href="elementary1.html" style="color:inherit">
+      <span class="dr-icon">🌿</span>
+      <div><div class="dr-title">Elementary 1 A2 — 初級1</div><div class="dr-sub">Book 2 · JFT-Basic</div></div>
+    </a>
+  </div>
+
+  <div class="dr-divider"></div>
+  <div class="dr-sec">
     <div class="dr-sec-title">Jump to Lesson</div>
   </div>
   <div id="drawer-lessons"></div>
@@ -342,8 +374,18 @@ body{min-height:100vh;overflow-x:hidden;padding-bottom:calc(var(--tab) + env(saf
       <div class="nb-sub" id="nb-sub">Irodori Starter</div>
     </div>
   </div>
-  <button class="icon-btn" id="menu-btn">☰</button>
+  <div style="display:flex;gap:6px;align-items:center">
+    <button class="lang-btn" id="lang-btn">EN</button>
+    <button class="icon-btn" id="menu-btn">☰</button>
+  </div>
 </nav>
+
+<!-- LANGUAGE MENU -->
+<div class="lang-menu" id="lang-menu">
+  <div class="lang-opt" data-lang="en" onclick="setLang('en')"><span class="lang-flag">🇬🇧</span> English</div>
+  <div class="lang-opt" data-lang="si" onclick="setLang('si')"><span class="lang-flag">🇱🇰</span> සිංහල</div>
+  <div class="lang-opt" data-lang="ta" onclick="setLang('ta')"><span class="lang-flag">🇱🇰</span> தமிழ்</div>
+</div>
 
 <!-- SCREEN: CHARTS (HOME) -->
 <div class="screen active" id="s-charts">
@@ -377,7 +419,7 @@ body{min-height:100vh;overflow-x:hidden;padding-bottom:calc(var(--tab) + env(saf
 <!-- SCREEN: LESSON DETAIL -->
 <div class="screen" id="s-detail">
   <div class="page">
-    <button class="btn-back" onclick="goLessons()">← All Lessons</button>
+    <button class="btn-back" id="detail-back-btn" onclick="goLessons()">← All Lessons</button>
     <div id="detail-content"></div>
   </div>
 </div>
@@ -454,6 +496,326 @@ const BOOK='irodori_a1';
 function isDone(n){return localStorage.getItem(BOOK+'_l'+n)==='1';}
 function setDone(n,v){v?localStorage.setItem(BOOK+'_l'+n,'1'):localStorage.removeItem(BOOK+'_l'+n);}
 function bookProg(){let d=0;LESSONS.forEach(l=>{if(isDone(l.num))d++;});return{done:d,total:18,pct:Math.round(d/18*100)};}
+
+// ═══════════════════════════════════
+// LANGUAGE SYSTEM (EN / SI / TA)
+// ═══════════════════════════════════
+let LANG = localStorage.getItem('app_lang') || 'en';
+
+const UI = {
+  en: {
+    charts_hint:'Tap any character to hear its sound 🔊',
+    lessons:'Lessons', charts:'Charts', games:'Games', review:'Review',
+    menu_title:'📚 Irodori Menu', screens:'Screens',
+    m_charts:'Hiragana / Katakana', m_charts_sub:'Charts with audio',
+    m_lessons:'All Lessons', m_lessons_sub:'Starter A1 — 18 lessons',
+    m_games:'Games', m_games_sub:'Matching · Sound quiz · Badges',
+    m_review:'Review Quiz', m_review_sub:'Random practice',
+    jump:'Jump to Lesson',
+    book_title:'Starter (A1) — 入門', book_sub:'Irodori: Japanese for Life in Japan · 18 Lessons',
+    stat_lessons:'Lessons', stat_done:'Done', stat_togo:'To go',
+    all_lessons:'← All Lessons', back:'← Back', home:'← Home', games_back:'← Games',
+    cando:'🎯 Can-do Goals', activities:'📝 Activities',
+    phrases:'💬 Key Phrases', phrases_tap:'(tap to hear ▶)',
+    kanji:'漢 Kanji Words', grammar:'📖 Grammar Notes', tips:'🇯🇵 Life in Japan Tips',
+    no_kanji:'No kanji in this lesson', gram_book:'Grammar notes in textbook',
+    practice:'🧠 Practice', mark_complete:'✓ Mark Complete', completed_undo:'✓ Completed — undo',
+    lesson_of:'Lesson', of18:'/ 18 · Starter A1',
+    q:'Q', score:'Score', what_mean:'What does this mean? (tap to hear)',
+    choose_meaning:'Choose the correct meaning:', next:'Next →',
+    ex_done:'Exercise Complete!', correct_count:'correct', try_again:'↩ Try Again',
+    back_lesson:'← Back to Lesson', complete_continue:'✓ Complete & Continue →',
+    no_ex:'No exercises for this type',
+    review_mode:'🧠 REVIEW', review_done:'Review Complete!', new_review:'↩ New Review',
+    games_title:'🎮 Games', games_sub:'Play & Learn',
+    g_match:'Matching', g_match_h:'Hiragana pairs', g_match_k:'Katakana pairs',
+    g_sound:'Sound Quiz', g_sound_h:'Hear → find kana', g_sound_k:'Katakana sounds',
+    badges:'🏅 Badges', match_title:'🎴 Matching', match_sub:'Match kana with its sound!',
+    moves:'Moves', pairs:'Pairs', you_win:'You Win!', completed_in:'Completed in', moves2:'moves',
+    bonus_xp:'bonus XP! 🌟', play_again:'↩ Play Again', games_menu:'← Games Menu',
+    sound_quiz:'🔊 SOUND QUIZ', round:'Round', listen_find:'Listen and find the kana!',
+    tap_replay:'(tap to replay)', it_was:'✗ It was:', sq_done:'Sound Quiz Done!',
+    great:'Excellent! Keep going!', good:'Good progress! Try again.', study:'Review the lesson and try again.',
+    ph_greet_hello:'Hello',
+  },
+  si: {
+    charts_hint:'ශබ්දය ඇසීමට ඕනෑම අකුරක් tap කරන්න 🔊',
+    lessons:'පාඩම්', charts:'හෝඩිය', games:'ක්‍රීඩා', review:'පුනරීක්ෂණ',
+    menu_title:'📚 Irodori මෙනුව', screens:'තිර',
+    m_charts:'හිරගනා / කතකනා', m_charts_sub:'ශබ්ද සහිත හෝඩි',
+    m_lessons:'සියලු පාඩම්', m_lessons_sub:'Starter A1 — පාඩම් 18',
+    m_games:'ක්‍රීඩා', m_games_sub:'ගැලපීම · ශබ්ද quiz · පදක්කම්',
+    m_review:'පුනරීක්ෂණ Quiz', m_review_sub:'අහඹු පුහුණුව',
+    jump:'පාඩමකට යන්න',
+    book_title:'Starter (A1) — 入門', book_sub:'ජපානයේ ජීවිතයට ජපන් · පාඩම් 18',
+    stat_lessons:'පාඩම්', stat_done:'නිමයි', stat_togo:'ඉතිරි',
+    all_lessons:'← සියලු පාඩම්', back:'← ආපසු', home:'← මුල් පිටුව', games_back:'← ක්‍රීඩා',
+    cando:'🎯 ඉලක්ක (Can-do)', activities:'📝 ක්‍රියාකාරකම්',
+    phrases:'💬 ප්‍රධාන වාක්‍ය', phrases_tap:'(ශබ්දයට tap ▶)',
+    kanji:'漢 කන්ජි වචන', grammar:'📖 ව්‍යාකරණ සටහන්', tips:'🇯🇵 ජපානයේ ජීවිත Tips',
+    no_kanji:'මෙම පාඩමේ කන්ජි නැත', gram_book:'ව්‍යාකරණ සටහන් පොතේ ඇත',
+    practice:'🧠 පුහුණු වන්න', mark_complete:'✓ නිම කළා', completed_undo:'✓ නිමයි — undo',
+    lesson_of:'පාඩම', of18:'/ 18 · Starter A1',
+    q:'ප්‍ර', score:'ලකුණු', what_mean:'මෙහි තේරුම කුමක්ද? (ශබ්දයට tap)',
+    choose_meaning:'නිවැරදි තේරුම තෝරන්න:', next:'ඊළඟ →',
+    ex_done:'අභ්‍යාසය නිමයි!', correct_count:'නිවැරදියි', try_again:'↩ නැවත',
+    back_lesson:'← පාඩමට ආපසු', complete_continue:'✓ නිම කර ඉදිරියට →',
+    no_ex:'මේ වර්ගයේ අභ්‍යාස නැත',
+    review_mode:'🧠 පුනරීක්ෂණ', review_done:'පුනරීක්ෂණය නිමයි!', new_review:'↩ නව පුනරීක්ෂණ',
+    games_title:'🎮 ක්‍රීඩා', games_sub:'සෙල්ලම් කරමින් ඉගෙන ගන්න',
+    g_match:'ගැලපීම', g_match_h:'හිරගනා යුගල', g_match_k:'කතකනා යුගල',
+    g_sound:'ශබ්ද Quiz', g_sound_h:'අහලා → අකුර හොයන්න', g_sound_k:'කතකනා ශබ්ද',
+    badges:'🏅 පදක්කම්', match_title:'🎴 ගැලපීම', match_sub:'අකුර ශබ්දයට ගලපන්න!',
+    moves:'පියවර', pairs:'යුගල', you_win:'දිනුවා!', completed_in:'නිම කළේ', moves2:'පියවරින්',
+    bonus_xp:'bonus XP! 🌟', play_again:'↩ නැවත සෙල්ලම්', games_menu:'← ක්‍රීඩා මෙනුව',
+    sound_quiz:'🔊 ශබ්ද QUIZ', round:'වටය', listen_find:'අහලා අකුර හොයන්න!',
+    tap_replay:'(නැවත ඇසීමට tap)', it_was:'✗ නිවැරදි:', sq_done:'ශබ්ද Quiz නිමයි!',
+    great:'නියමයි! දිගටම!', good:'හොඳ ප්‍රගතියක්! නැවත try කරන්න.', study:'පාඩම බලලා නැවත try කරන්න.',
+    ph_greet_hello:'ආයුබෝවන්',
+  },
+  ta: {
+    charts_hint:'ஒலியைக் கேட்க எந்த எழுத்தையும் tap செய்யவும் 🔊',
+    lessons:'பாடங்கள்', charts:'எழுத்துகள்', games:'விளையாட்டு', review:'மீள்பார்வை',
+    menu_title:'📚 Irodori மெனு', screens:'திரைகள்',
+    m_charts:'ஹிரகனா / கடகனா', m_charts_sub:'ஒலியுடன் எழுத்து அட்டவணை',
+    m_lessons:'அனைத்து பாடங்கள்', m_lessons_sub:'Starter A1 — 18 பாடங்கள்',
+    m_games:'விளையாட்டு', m_games_sub:'பொருத்துதல் · ஒலி quiz · பதக்கங்கள்',
+    m_review:'மீள்பார்வை Quiz', m_review_sub:'சீரற்ற பயிற்சி',
+    jump:'பாடத்திற்கு செல்',
+    book_title:'Starter (A1) — 入門', book_sub:'ஜப்பானில் வாழ்க்கைக்கான ஜப்பானியம் · 18 பாடங்கள்',
+    stat_lessons:'பாடங்கள்', stat_done:'முடிந்தது', stat_togo:'மீதம்',
+    all_lessons:'← அனைத்து பாடங்கள்', back:'← பின்', home:'← முகப்பு', games_back:'← விளையாட்டு',
+    cando:'🎯 இலக்குகள் (Can-do)', activities:'📝 செயல்பாடுகள்',
+    phrases:'💬 முக்கிய சொற்றொடர்கள்', phrases_tap:'(ஒலிக்கு tap ▶)',
+    kanji:'漢 கன்ஜி சொற்கள்', grammar:'📖 இலக்கண குறிப்புகள்', tips:'🇯🇵 ஜப்பான் வாழ்க்கை Tips',
+    no_kanji:'இந்த பாடத்தில் கன்ஜி இல்லை', gram_book:'இலக்கண குறிப்புகள் புத்தகத்தில்',
+    practice:'🧠 பயிற்சி', mark_complete:'✓ முடிந்தது', completed_undo:'✓ முடிந்தது — undo',
+    lesson_of:'பாடம்', of18:'/ 18 · Starter A1',
+    q:'கே', score:'மதிப்பெண்', what_mean:'இதன் பொருள் என்ன? (ஒலிக்கு tap)',
+    choose_meaning:'சரியான பொருளைத் தேர்ந்தெடு:', next:'அடுத்து →',
+    ex_done:'பயிற்சி முடிந்தது!', correct_count:'சரி', try_again:'↩ மீண்டும்',
+    back_lesson:'← பாடத்திற்கு பின்', complete_continue:'✓ முடித்து தொடரவும் →',
+    no_ex:'இந்த வகைக்கு பயிற்சிகள் இல்லை',
+    review_mode:'🧠 மீள்பார்வை', review_done:'மீள்பார்வை முடிந்தது!', new_review:'↩ புதிய மீள்பார்வை',
+    games_title:'🎮 விளையாட்டு', games_sub:'விளையாடி கற்றுக்கொள்',
+    g_match:'பொருத்துதல்', g_match_h:'ஹிரகனா ஜோடிகள்', g_match_k:'கடகனா ஜோடிகள்',
+    g_sound:'ஒலி Quiz', g_sound_h:'கேட்டு → எழுத்தை கண்டுபிடி', g_sound_k:'கடகனா ஒலிகள்',
+    badges:'🏅 பதக்கங்கள்', match_title:'🎴 பொருத்துதல்', match_sub:'எழுத்தை ஒலியுடன் பொருத்து!',
+    moves:'நகர்வுகள்', pairs:'ஜோடிகள்', you_win:'வென்றீர்கள்!', completed_in:'முடித்தது', moves2:'நகர்வுகளில்',
+    bonus_xp:'bonus XP! 🌟', play_again:'↩ மீண்டும் விளையாடு', games_menu:'← விளையாட்டு மெனு',
+    sound_quiz:'🔊 ஒலி QUIZ', round:'சுற்று', listen_find:'கேட்டு எழுத்தை கண்டுபிடி!',
+    tap_replay:'(மீண்டும் கேட்க tap)', it_was:'✗ சரியானது:', sq_done:'ஒலி Quiz முடிந்தது!',
+    great:'அருமை! தொடருங்கள்!', good:'நல்ல முன்னேற்றம்! மீண்டும் முயற்சி.', study:'பாடத்தை படித்து மீண்டும் முயற்சி.',
+    ph_greet_hello:'வணக்கம்',
+  }
+};
+function T(key){ return (UI[LANG] && UI[LANG][key]) || UI.en[key] || key; }
+
+// ── Key aliases (map code keys → dict keys) ──
+(function(){
+  const alias = {
+    key_phrases:'phrases', tap_to_hear:'phrases_tap', kanji_words:'kanji',
+    grammar_notes:'grammar', grammar_in_book:'gram_book',
+    ex_complete:'ex_done', review_complete:'review_done',
+    back_home:'home', back_games:'games_back',
+    matching:'g_match', h_pairs:'g_match_h', k_pairs:'g_match_k',
+    sound_quiz_menu:'g_sound', hear_find:'g_sound_h', k_sounds:'g_sound_k',
+    sound_done:'sq_done', done:'stat_done', to_go:'stat_togo',
+    lessons_title:'m_lessons',
+    phrases_tab:null, kanji_tab:null, grammar_tab:null, // fallbacks below
+  };
+  const extras = {
+    en:{phrases_tab:'Phrases',kanji_tab:'Kanji',grammar_tab:'Grammar'},
+    si:{phrases_tab:'වාක්‍ය',kanji_tab:'කන්ජි',grammar_tab:'ව්‍යාකරණ'},
+    ta:{phrases_tab:'சொற்றொடர்',kanji_tab:'கன்ஜி',grammar_tab:'இலக்கணம்'},
+  };
+  ['en','si','ta'].forEach(l=>{
+    Object.keys(alias).forEach(k=>{
+      if(alias[k] && UI[l][alias[k]]!==undefined) UI[l][k]=UI[l][alias[k]];
+    });
+    Object.assign(UI[l], extras[l]);
+  });
+})();
+
+
+// ── Phrase/kanji/cando translations (si/ta) ──
+// Keyed by English string → {si, ta}
+const TR = {
+  // Common phrase meanings
+  'Hello':{si:'ආයුබෝවන්',ta:'வணக்கம்'},
+  'Good morning':{si:'සුභ උදෑසනක්',ta:'காலை வணக்கம்'},
+  'Good evening':{si:'සුභ සන්ධ්‍යාවක්',ta:'மாலை வணக்கம்'},
+  'Goodbye':{si:'ආයුබෝවන් (සමුගැනීම)',ta:'விடைபெறுகிறேன்'},
+  'Thank you':{si:'ස්තූතියි',ta:'நன்றி'},
+  'Excuse me / Sorry':{si:'සමාවෙන්න',ta:'மன்னிக்கவும்'},
+  "I'm leaving first (work)":{si:'මම කලින් යනවා (රැකියාවේ)',ta:'நான் முதலில் செல்கிறேன்'},
+  'One more time, please':{si:'තව එක් වරක් කියන්න',ta:'மீண்டும் ஒருமுறை சொல்லுங்கள்'},
+  'Please say it slowly':{si:'සෙමින් කියන්න',ta:'மெதுவாக சொல்லுங்கள்'},
+  'I understand':{si:'තේරුණා',ta:'புரிந்தது'},
+  "I don't understand":{si:'තේරෙන්නේ නැහැ',ta:'புரியவில்லை'},
+  'Do you speak Japanese?':{si:'ජපන් කතා කරනවද?',ta:'ஜப்பானிய மொழி பேசுவீர்களா?'},
+  'Nice to meet you':{si:'හමුවීම සතුටක්',ta:'சந்தித்ததில் மகிழ்ச்சி'},
+  'Please treat me well':{si:'මට සහයෝගය දෙන්න',ta:'என்னை நன்றாக நடத்துங்கள்'},
+  'I am ___':{si:'මම ___',ta:'நான் ___'},
+  'I came from ___':{si:'මම ___ සිට ආවා',ta:'நான் ___ இருந்து வந்தேன்'},
+  'Where are you from?':{si:'ඔයා කොහෙන්ද?',ta:'நீங்கள் எங்கிருந்து?'},
+  'How old are you?':{si:'වයස කීයද?',ta:'உங்கள் வயது என்ன?'},
+  'I am ___ years old':{si:'මගේ වයස ___',ta:'என் வயது ___'},
+  'I live in ___':{si:'මම ___ පදිංචි',ta:'நான் ___ இல் வசிக்கிறேன்'},
+  'My family has ___ people':{si:'මගේ පවුලේ ___ දෙනෙක්',ta:'என் குடும்பத்தில் ___ பேர்'},
+  'I like ___':{si:'මම ___ ට කැමතියි',ta:'எனக்கு ___ பிடிக்கும்'},
+  "I don't like ___":{si:'මම ___ ට කැමති නැහැ',ta:'எனக்கு ___ பிடிக்காது'},
+  '___ is a bit... (soft refusal)':{si:'___ ටිකක්... (මෘදු ප්‍රතික්ෂේප)',ta:'___ கொஞ்சம்... (மென்மையான மறுப்பு)'},
+  'I often eat':{si:'මම නිතර කනවා',ta:'நான் அடிக்கடி சாப்பிடுவேன்'},
+  "I don't eat much":{si:'මම වැඩිය කන්නේ නැහැ',ta:'நான் அதிகம் சாப்பிட மாட்டேன்'},
+  '___, please':{si:'___ දෙන්න',ta:'___ தாருங்கள்'},
+  '___, please (polite)':{si:'___ දෙන්න (ගෞරවයෙන්)',ta:'___ தாருங்கள் (மரியாதை)'},
+  "I'll have ___":{si:'මම ___ ගන්නවා',ta:'நான் ___ எடுக்கிறேன்'},
+  'Do you have ___?':{si:'___ තියෙනවද?',ta:'___ இருக்கிறதா?'},
+  'This is ___':{si:'මේක ___',ta:'இது ___'},
+  'There is/are ___':{si:'___ තියෙනවා',ta:'___ இருக்கிறது'},
+  'Is there ___?':{si:'___ තියෙනවද?',ta:'___ இருக்கிறதா?'},
+  'There is no ___':{si:'___ නැහැ',ta:'___ இல்லை'},
+  'Where is ___ (person)?':{si:'___ කොහෙද ඉන්නේ?',ta:'___ எங்கே இருக்கிறார்?'},
+  'Where is ___ (thing)?':{si:'___ කොහෙද තියෙන්නේ?',ta:'___ எங்கே இருக்கிறது?'},
+  'Is at ___':{si:'___ ඉන්නවා/තියෙනවා',ta:'___ இல் உள்ளது'},
+  'Is inside ___':{si:'___ ඇතුළේ',ta:'___ உள்ளே'},
+  'What time do you ___?':{si:'කීයටද ___?',ta:'எத்தனை மணிக்கு ___?'},
+  "I get up at ___ o'clock":{si:'මම ___ ට නැගිටිනවා',ta:'நான் ___ மணிக்கு எழுவேன்'},
+  'From ___ to ___':{si:'___ සිට ___ දක්වා',ta:'___ முதல் ___ வரை'},
+  '___ is good for me':{si:'___ මට හොඳයි',ta:'___ எனக்கு நல்லது'},
+  'Please lend me ___':{si:'___ ණයට දෙන්න',ta:'___ கடன் தாருங்கள்'},
+  'May I borrow ___?':{si:'___ ණයට ගන්න පුළුවන්ද?',ta:'___ கடன் வாங்கலாமா?'},
+  'Please ___ (request)':{si:'කරුණාකර ___',ta:'தயவுசெய்து ___'},
+  'Right? (confirmation)':{si:'නේද? (තහවුරු)',ta:'இல்லையா? (உறுதி)'},
+  'My hobby is ___':{si:'මගේ hobby එක ___',ta:'என் பொழுதுபோக்கு ___'},
+  'What kind of ___ do you like?':{si:'මොන වගේ ___ ද කැමති?',ta:'எந்த வகையான ___ பிடிக்கும்?'},
+  'I usually ___':{si:'මම සාමාන්‍යයෙන් ___',ta:'நான் வழக்கமாக ___'},
+  'I sometimes ___':{si:'මම සමහරවිට ___',ta:'நான் சில நேரம் ___'},
+  'Shall we ___ together?':{si:'එකට ___ කරමුද?',ta:'ஒன்றாக ___ செய்யலாமா?'},
+  "Let's ___ together":{si:'එකට ___ කරමු',ta:'ஒன்றாக ___ செய்வோம்'},
+  'I will go to ___':{si:'මම ___ ට යනවා',ta:'நான் ___ போகிறேன்'},
+  'Does this bus go to ___?':{si:'මේ බස් එක ___ ට යනවද?',ta:'இந்த பேருந்து ___ போகுமா?'},
+  'I go to ___ by ___':{si:'මම ___ ට ___ එකෙන් යනවා',ta:'நான் ___ க்கு ___ மூலம் போவேன்'},
+  'It takes ___':{si:'___ ගත වෙනවා',ta:'___ ஆகும்'},
+  'Which platform?':{si:'මොන platform එකද?',ta:'எந்த நடைமேடை?'},
+  'Where is ___?':{si:'___ කොහෙද?',ta:'___ எங்கே?'},
+  'Is there ___ near here?':{si:'මේ ළඟ ___ තියෙනවද?',ta:'இங்கு அருகில் ___ உள்ளதா?'},
+  'I am in front of ___':{si:'මම ___ ඉස්සරහ',ta:'நான் ___ முன் இருக்கிறேன்'},
+  'I want ___, but... (seeking help)':{si:'මට ___ ඕනෑ, ඒත්... (උදව් ඉල්ලීම)',ta:'எனக்கு ___ வேண்டும், ஆனால்...'},
+  'Which floor?':{si:'මොන තට්ටුවෙද?',ta:'எந்த மாடி?'},
+  'Where can I buy it?':{si:'කොහෙන්ද ගන්න පුළුවන්?',ta:'எங்கே வாங்கலாம்?'},
+  'Cool!':{si:'නියමයි!',ta:'அருமை!'},
+  'Cute!':{si:'හුරතල්!',ta:'அழகு!'},
+  'How much is this?':{si:'මේක කීයද?',ta:'இது எவ்வளவு?'},
+  "It's ___ yen":{si:'___ යෙන්',ta:'___ யென்'},
+  '___ pieces, please':{si:'___ ක් දෙන්න',ta:'___ துண்டுகள் தாருங்கள்'},
+  'What did you do on the weekend?':{si:'සති අන්තයේ මොකද කළේ?',ta:'வார இறுதியில் என்ன செய்தீர்கள்?'},
+  'I went to ___':{si:'මම ___ ට ගියා',ta:'நான் ___ போனேன்'},
+  'It was fun':{si:'සතුටුයි / විනෝදයි',ta:'மகிழ்ச்சியாக இருந்தது'},
+  'It was interesting':{si:'රසවත් වුණා',ta:'சுவாரஸ்யமாக இருந்தது'},
+  'It was so-so':{si:'එච්චර නෑ (සාමාන්‍යයි)',ta:'சுமாராக இருந்தது'},
+  'I want to ___':{si:'මට ___ කරන්න ඕනෑ',ta:'நான் ___ செய்ய விரும்புகிறேன்'},
+  'I want to do ___':{si:'මට ___ කරන්න ඕනෑ',ta:'நான் ___ செய்ய விரும்புகிறேன்'},
+  'I want to go to ___':{si:'මට ___ ට යන්න ඕනෑ',ta:'நான் ___ போக விரும்புகிறேன்'},
+  'After that':{si:'ඊට පස්සේ',ta:'அதன் பிறகு'},
+  'But / However':{si:'ඒත් / නමුත්',ta:'ஆனால்'},
+  // Kanji meanings
+  'Name':{si:'නම',ta:'பெயர்'},'Country':{si:'රට',ta:'நாடு'},'I / Me':{si:'මම',ta:'நான்'},
+  'Father':{si:'තාත්තා',ta:'அப்பா'},'Mother':{si:'අම්මා',ta:'அம்மா'},'Child':{si:'දරුවා',ta:'குழந்தை'},
+  'Japan':{si:'ජපානය',ta:'ஜப்பான்'},'Water':{si:'වතුර',ta:'தண்ணீர்'},'Eat':{si:'කනවා',ta:'சாப்பிடு'},
+  'Drink':{si:'බොනවා',ta:'குடி'},'Fish':{si:'මාළු',ta:'மீன்'},'Meat':{si:'මස්',ta:'இறைச்சி'},
+  'House':{si:'ගෙදර',ta:'வீடு'},'New':{si:'අලුත්',ta:'புதிய'},'Spacious':{si:'ඉඩ ඇති',ta:'விசாலமான'},
+  'Old':{si:'පරණ',ta:'பழைய'},'Above':{si:'උඩ',ta:'மேலே'},'Below':{si:'යට',ta:'கீழே'},'Inside':{si:'ඇතුළ',ta:'உள்ளே'},
+  'Monday':{si:'සඳුදා',ta:'திங்கள்'},'Tuesday':{si:'අඟහරුවාදා',ta:'செவ்வாய்'},'Wednesday':{si:'බදාදා',ta:'புதன்'},
+  'Thursday':{si:'බ්‍රහස්පතින්දා',ta:'வியாழன்'},'Friday':{si:'සිකුරාදා',ta:'வெள்ளி'},
+  'Saturday':{si:'සෙනසුරාදා',ta:'சனி'},'Sunday':{si:'ඉරිදා',ta:'ஞாயிறு'},
+  'Morning':{si:'උදේ',ta:'காலை'},'Noon':{si:'දවල්',ta:'மதியம்'},'Night':{si:'රෑ',ta:'இரவு'},
+  "O'clock":{si:'ට (වේලාව)',ta:'மணி'},'Read':{si:'කියවනවා',ta:'படி'},'Listen':{si:'අහනවා',ta:'கேள்'},
+  'Watch':{si:'බලනවා',ta:'பார்'},'Book':{si:'පොත',ta:'புத்தகம்'},'Today':{si:'අද',ta:'இன்று'},
+  'Next week':{si:'ලබන සතියේ',ta:'அடுத்த வாரம்'},'This week':{si:'මේ සතියේ',ta:'இந்த வாரம்'},
+  'East':{si:'නැගෙනහිර',ta:'கிழக்கு'},'West':{si:'බටහිර',ta:'மேற்கு'},'South':{si:'දකුණ',ta:'தெற்கு'},
+  'North':{si:'උතුර',ta:'வடக்கு'},'Board':{si:'නගිනවා',ta:'ஏறு'},'Get off':{si:'බහිනවා',ta:'இறங்கு'},
+  'Board / Ride':{si:'නගිනවා',ta:'ஏறு'},
+  'Big':{si:'ලොකු',ta:'பெரிய'},'Small':{si:'පොඩි',ta:'சிறிய'},'High/Expensive':{si:'උස / මිල අධික',ta:'உயர்ந்த / விலை'},
+  'High / Expensive':{si:'උස / මිල අධික',ta:'உயர்ந்த / விலை'},
+  'Front':{si:'ඉස්සරහ',ta:'முன்'},'Front / Before':{si:'ඉස්සරහ',ta:'முன்'},'Behind':{si:'පිටිපස්සේ',ta:'பின்'},
+  'Entrance':{si:'ඇතුල්වීම',ta:'நுழைவு'},'Exit':{si:'පිටවීම',ta:'வெளியேறு'},'Floor':{si:'තට්ටුව',ta:'மாடி'},
+  'Cheap':{si:'ලාභයි',ta:'மலிவு'},'Cool':{si:'නියමයි',ta:'அருமை'},'Cute':{si:'හුරතල්',ta:'அழகு'},
+  '100':{si:'සියය (100)',ta:'நூறு (100)'},'1,000':{si:'දහස (1,000)',ta:'ஆயிரம் (1,000)'},
+  '10,000':{si:'දසදහස (10,000)',ta:'பத்தாயிரம் (10,000)'},'Movie':{si:'චිත්‍රපටිය',ta:'திரைப்படம்'},
+  'Day off':{si:'නිවාඩුව',ta:'விடுமுறை'},'Hot spring':{si:'උණු දිය උල්පත',ta:'வெந்நீர் ஊற்று'},
+  'Plan':{si:'සැලැස්ම',ta:'திட்டம்'},'Travel':{si:'සංචාරය',ta:'பயணம்'},
+  '1':{si:'එක (1)',ta:'ஒன்று (1)'},'2':{si:'දෙක (2)',ta:'இரண்டு (2)'},'3':{si:'තුන (3)',ta:'மூன்று (3)'},
+  '4':{si:'හතර (4)',ta:'நான்கு (4)'},'5':{si:'පහ (5)',ta:'ஐந்து (5)'},'6':{si:'හය (6)',ta:'ஆறு (6)'},
+  '7':{si:'හත (7)',ta:'ஏழு (7)'},'8':{si:'අට (8)',ta:'எட்டு (8)'},'9':{si:'නවය (9)',ta:'ஒன்பது (9)'},
+  '10':{si:'දහය (10)',ta:'பத்து (10)'},
+  // Exercise-only strings
+  'One more time':{si:'තව එක් වරක්',ta:'மீண்டும் ஒருமுறை'},'Slowly':{si:'සෙමින්',ta:'மெதுவாக'},
+  'Like':{si:'කැමතියි',ta:'பிடிக்கும்'},'Dislike':{si:'අකමැතියි',ta:'பிடிக்காது'},
+  'Please give me':{si:'මට දෙන්න',ta:'எனக்கு தாருங்கள்'},"I'll have":{si:'මම ගන්නවා',ta:'நான் எடுக்கிறேன்'},
+  'There is / are':{si:'තියෙනවා',ta:'இருக்கிறது'},'There is not':{si:'නැහැ',ta:'இல்லை'},
+  'Narrow / Small':{si:'පටු / පොඩි',ta:'குறுகிய / சிறிய'},
+  'Is here (person)':{si:'ඉන්නවා (කෙනෙක්)',ta:'இருக்கிறார் (நபர்)'},
+  'Is not here (person)':{si:'නැහැ (කෙනෙක්)',ta:'இல்லை (நபர்)'},
+  'Please lend me':{si:'ණයට දෙන්න',ta:'கடன் தாருங்கள்'},'May I borrow?':{si:'ණයට ගන්නද?',ta:'கடன் வாங்கலாமா?'},
+  'Hobby':{si:'විනෝදාංශය',ta:'பொழுதுபோக்கு'},'What kind of':{si:'මොන වගේ',ta:'எந்த வகை'},
+  'Usually':{si:'සාමාන්‍යයෙන්',ta:'வழக்கமாக'},'Sometimes':{si:'සමහරවිට',ta:'சில நேரம்'},
+  'Shall we...?':{si:'...කරමුද?',ta:'...செய்யலாமா?'},"Let's...":{si:'...කරමු',ta:'...செய்வோம்'},
+  'Want to [do]':{si:'[කරන්න] ඕනෑ',ta:'[செய்ய] விரும்பு'},
+  'How much is it?':{si:'කීයද?',ta:'எவ்வளவு?'},
+};
+function tr(en){
+  if(LANG==='en') return en;
+  const t=TR[en];
+  if(t && t[LANG]) return t[LANG] + ' · ' + en;
+  return en;
+}
+// Short version (no english appended) for quiz options
+function trShort(en){
+  if(LANG==='en') return en;
+  const t=TR[en];
+  if(t && t[LANG]) return t[LANG];
+  return en;
+}
+
+function setLang(l){
+  LANG=l;
+  localStorage.setItem('app_lang',l);
+  $('lang-btn').textContent = l==='en'?'EN':l==='si'?'සිං':'த';
+  document.querySelectorAll('.lang-opt').forEach(o=>o.classList.toggle('on',o.dataset.lang===l));
+  $('lang-menu').classList.remove('on');
+  applyLang();
+}
+
+function applyLang(){
+  // Tab bar
+  $('tab-charts').innerHTML='<span class="ti">🔤</span>'+T('charts');
+  $('tab-games').innerHTML='<span class="ti">🎮</span>'+T('games');
+  $('tab-lessons').innerHTML='<span class="ti">📖</span>'+T('lessons');
+  $('tab-review').innerHTML='<span class="ti">🧠</span>'+T('review');
+  // Chart hint
+  const hint=$('chart-hint'); if(hint) hint.textContent=T('charts_hint');
+  // Drawer
+  document.querySelector('.dr-head h2').textContent=T('menu_title');
+  document.querySelector('#menu-charts .dr-title').textContent=T('m_charts');
+  document.querySelector('#menu-charts .dr-sub').textContent=T('m_charts_sub');
+  document.querySelector('#menu-lessons .dr-title').textContent=T('m_lessons');
+  document.querySelector('#menu-lessons .dr-sub').textContent=T('m_lessons_sub');
+  document.querySelector('#menu-games .dr-title').textContent=T('m_games');
+  document.querySelector('#menu-games .dr-sub').textContent=T('m_games_sub');
+  document.querySelector('#menu-review .dr-title').textContent=T('m_review');
+  document.querySelector('#menu-review .dr-sub').textContent=T('m_review_sub');
+  // Book banner
+  const bi=document.querySelector('.book-info');
+  if(bi){bi.querySelector('h2').textContent=T('book_title');bi.querySelector('p').textContent=T('book_sub');}
+  // Re-render current screen
+  const activeId=document.querySelector('.screen.active')?.id;
+  if(activeId==='s-lessons') renderLessons();
+  else if(activeId==='s-detail'&&curLesson) renderDetail(curLesson);
+  else if(activeId==='s-games') renderGamesMenu();
+}
+
 
 // ═══════════════════════════════════
 // NAVIGATION
@@ -753,18 +1115,18 @@ function renderLessons(){
   const p=bookProg();
   $('book-prog').innerHTML=`<div class="prog-wrap"><div class="prog-track"><div class="prog-bar" style="width:${Math.max(2,p.pct)}%"></div></div><div class="prog-lbl">${p.pct}%</div></div>`;
   $('book-stats').innerHTML=`<div class="stats">
-    <div class="stat"><div class="stat-n">${p.total}</div><div class="stat-l">Lessons</div></div>
-    <div class="stat"><div class="stat-n" style="color:var(--green)">${p.done}</div><div class="stat-l">Done</div></div>
-    <div class="stat"><div class="stat-n" style="color:var(--accent)">${p.total-p.done}</div><div class="stat-l">To go</div></div>
+    <div class="stat"><div class="stat-n">${p.total}</div><div class="stat-l">${T('lessons_title')}</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--green)">${p.done}</div><div class="stat-l">${T('done')}</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--accent)">${p.total-p.done}</div><div class="stat-l">${T('to_go')}</div></div>
   </div>`;
   let html='';
   TOPICS.forEach(topic=>{
     html+=`<div class="sec-label">▶ ${esc(topic.en)}</div>`;
     topic.lessons.forEach(lnum=>{
       const L=LESSONS[lnum-1],done=isDone(lnum);
-      const pills=L.cando.slice(0,2).map(c=>`<span class="lc-pill">${esc(c.substring(0,50))}${c.length>50?'…':''}</span>`).join('');
+      const pills=L.cando.slice(0,2).map(c=>{const t=tr(c)||c;return `<span class="lc-pill">${esc(t.substring(0,50))}${t.length>50?'…':''}</span>`;}).join('');
       html+=`<div class="lcard${done?' done':''}" onclick="goDetail(${lnum})">
-        <div class="lc-badge">Lesson ${lnum}</div>
+        <div class="lc-badge">${T('lesson_of')} ${lnum}</div>
         <div class="lc-body"><div class="lc-en">${esc(L.en)}</div><div class="lc-jp">${esc(L.jp)}</div><div class="lc-pills">${pills}</div></div>
         ${done?'<span class="lc-check">✓</span>':''}
       </div>`;
@@ -780,30 +1142,30 @@ let curLesson=null;
 function renderDetail(num){
   const L=LESSONS[num-1],done=isDone(num);
   const topic=TOPICS.find(t=>t.lessons.includes(num));
-  const candoHtml=L.cando.map(c=>`<div class="cando-item"><span style="color:var(--accent2);font-size:.72rem;flex-shrink:0;margin-top:2px">✓</span><span class="cando-txt">${esc(c)}</span></div>`).join('');
+  const candoHtml=L.cando.map(c=>`<div class="cando-item"><span style="color:var(--accent2);font-size:.72rem;flex-shrink:0;margin-top:2px">✓</span><span class="cando-txt">${esc(tr(c))}</span></div>`).join('');
   const actHtml=L.activities.map(a=>`<div class="act-row"><span class="act-icon">${a.icon}</span><div style="flex:1;min-width:0"><div class="act-txt">${esc(a.jp)}</div><div class="act-en">${esc(a.en)}</div></div><button class="act-play" onclick="speak('${esc(a.jp).replace(/'/g,"\\'")}')">▶</button></div>`).join('');
-  const phraseHtml=(L.phrases||[]).map(p=>`<div class="phrase-row" onclick="speak('${esc(p.jp).replace(/'/g,"\\'")}')"><span class="ph-jp">${esc(p.jp)}</span><div class="ph-right"><div class="ph-r">${esc(p.r)}</div><div class="ph-en">${esc(p.en)}</div></div><span class="ph-play">▶</span></div>`).join('');
-  const kanjiHtml=L.kanji&&L.kanji.length?`<div class="kanji-grid">${L.kanji.map(k=>`<div class="kchip" onclick="speak('${esc(k.jp).replace(/'/g,"\\'")}')"><div class="kc-jp">${esc(k.jp)}</div><div class="kc-r">${esc(k.r)}</div><div class="kc-en">${esc(k.en)}</div></div>`).join('')}</div>`:`<p style="font-size:.78rem;color:var(--text3)">No kanji in this lesson</p>`;
-  const gramHtml=L.grammar&&L.grammar.length?L.grammar.map(g=>`<div class="gram-item"><div class="gi-pat">${esc(g.pat)}</div><div class="gi-ex">${esc(g.ex)}</div><div class="gi-m">${esc(g.m)}</div></div>`).join(''):`<p style="font-size:.78rem;color:var(--text3)">Grammar notes in textbook</p>`;
+  const phraseHtml=(L.phrases||[]).map(p=>`<div class="phrase-row" onclick="speak('${esc(p.jp).replace(/'/g,"\\'")}')"><span class="ph-jp">${esc(p.jp)}</span><div class="ph-right"><div class="ph-r">${esc(p.r)}</div><div class="ph-en">${esc(tr(p.en))}</div></div><span class="ph-play">▶</span></div>`).join('');
+  const kanjiHtml=L.kanji&&L.kanji.length?`<div class="kanji-grid">${L.kanji.map(k=>`<div class="kchip" onclick="speak('${esc(k.jp).replace(/'/g,"\\'")}')"><div class="kc-jp">${esc(k.jp)}</div><div class="kc-r">${esc(k.r)}</div><div class="kc-en">${esc(tr(k.en))}</div></div>`).join('')}</div>`:`<p style="font-size:.78rem;color:var(--text3)">${T('no_kanji')}</p>`;
+  const gramHtml=L.grammar&&L.grammar.length?L.grammar.map(g=>`<div class="gram-item"><div class="gi-pat">${esc(g.pat)}</div><div class="gi-ex">${esc(g.ex)}</div><div class="gi-m">${esc(g.m)}</div></div>`).join(''):`<p style="font-size:.78rem;color:var(--text3)">${T('grammar_in_book')}</p>`;
   const tipsHtml=L.tips&&L.tips.length?`<div class="tips-box">${L.tips.map(t=>`<span class="tips-tag">${esc(t)}</span>`).join('')}</div>`:'';
   $('detail-content').innerHTML=`<div class="dcard">
     <div class="d-topic">▶ ${esc(topic?.en||'')}</div>
-    <div class="d-num">Lesson ${num} / 18 · Starter A1</div>
+    <div class="d-num">${T('lesson_of')} ${num} ${T('of18')}</div>
     <div class="d-title">${esc(L.en)}</div>
     <div class="d-jp">${esc(L.jp)}</div>
-    <div class="d-sec"><div class="d-hdr">🎯 Can-do Goals</div>${candoHtml}</div>
-    <div class="d-sec"><div class="d-hdr">📝 Activities</div>${actHtml}</div>
-    <div class="d-sec"><div class="d-hdr">💬 Key Phrases <span style="font-size:.62rem;color:var(--text3)">(tap to hear ▶)</span></div>${phraseHtml}</div>
-    <div class="d-sec"><div class="d-hdr">漢 Kanji Words</div>${kanjiHtml}</div>
-    <div class="d-sec"><div class="d-hdr">📖 Grammar Notes</div>${gramHtml}</div>
-    ${tipsHtml?`<div class="d-sec"><div class="d-hdr">🇯🇵 Life in Japan Tips</div>${tipsHtml}</div>`:''}
+    <div class="d-sec"><div class="d-hdr">${T('cando')}</div>${candoHtml}</div>
+    <div class="d-sec"><div class="d-hdr">${T('activities')}</div>${actHtml}</div>
+    <div class="d-sec"><div class="d-hdr">${T('key_phrases')} <span style="font-size:.62rem;color:var(--text3)">${T('tap_to_hear')}</span></div>${phraseHtml}</div>
+    <div class="d-sec"><div class="d-hdr">${T('kanji_words')}</div>${kanjiHtml}</div>
+    <div class="d-sec"><div class="d-hdr">${T('grammar_notes')}</div>${gramHtml}</div>
+    ${tipsHtml?`<div class="d-sec"><div class="d-hdr">${T('tips')}</div>${tipsHtml}</div>`:''}
     <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:.5rem">
-      <button class="btn btn-p" style="flex:1;min-width:120px" onclick="goExercise(${num},'phrases')">🧠 Practice</button>
-      <button class="btn btn-t btn-full" id="done-btn-${num}" onclick="toggleDone(${num})">${done?'✓ Completed — undo':'✓ Mark Complete'}</button>
+      <button class="btn btn-p" style="flex:1;min-width:120px" onclick="goExercise(${num},'phrases')">${T('practice')}</button>
+      <button class="btn btn-t btn-full" id="done-btn-${num}" onclick="toggleDone(${num})">${done?T('completed_undo'):T('mark_complete')}</button>
     </div>
   </div>`;
 }
-function toggleDone(num){const wasDone=isDone(num);setDone(num,!wasDone);if(!wasDone){XP.add(50);Streak.touch();}const b=$('done-btn-'+num);if(b)b.textContent=isDone(num)?'✓ Completed — undo':'✓ Mark Complete';buildDrawerLessons();checkBadges();}
+function toggleDone(num){const wasDone=isDone(num);setDone(num,!wasDone);if(!wasDone){XP.add(50);Streak.touch();}const b=$('done-btn-'+num);if(b)b.textContent=isDone(num)?T('completed_undo'):T('mark_complete');buildDrawerLessons();checkBadges();}
 
 // ═══════════════════════════════════
 // EXERCISES
@@ -811,24 +1173,24 @@ function toggleDone(num){const wasDone=isDone(num);setDone(num,!wasDone);if(!was
 let exType='phrases',exQ=[],exIdx=0,exScore=0;
 function buildPool(num,type){
   const L=LESSONS[num-1]; let items=[];
-  if(type==='phrases')(L.phrases||[]).forEach(p=>items.push({q:p.jp,a:p.en,isJP:true}));
+  if(type==='phrases')(L.phrases||[]).forEach(p=>items.push({q:p.jp,a:tr(p.en),isJP:true}));
   else if(type==='grammar')(L.grammar||[]).forEach(g=>items.push({q:g.pat,a:g.m,isJP:false,ex:g.ex}));
-  else if(type==='kanji')(L.kanji||[]).forEach(k=>items.push({q:k.jp,a:k.en,isJP:true,r:k.r}));
-  else(L.exercises||[]).forEach(e=>items.push({q:e.q,a:e.a,isJP:false}));
+  else if(type==='kanji')(L.kanji||[]).forEach(k=>items.push({q:k.jp,a:tr(k.en),isJP:true,r:k.r}));
+  else(L.exercises||[]).forEach(e=>items.push({q:e.q,a:tr(e.a),isJP:false}));
   return shuf(items).slice(0,10);
 }
 function allAnswers(type){
   const ans=new Set();
   LESSONS.forEach(L=>{
     if(type==='grammar')(L.grammar||[]).forEach(g=>ans.add(g.m));
-    else if(type==='kanji')(L.kanji||[]).forEach(k=>ans.add(k.en));
-    else{(L.phrases||[]).forEach(p=>ans.add(p.en));(L.exercises||[]).forEach(e=>ans.add(e.a));}
+    else if(type==='kanji')(L.kanji||[]).forEach(k=>ans.add(tr(k.en)));
+    else{(L.phrases||[]).forEach(p=>ans.add(tr(p.en)));(L.exercises||[]).forEach(e=>ans.add(tr(e.a)));}
   });
   return[...ans];
 }
 function startExercise(){
   exQ=buildPool(curLesson,exType);exIdx=0;exScore=0;
-  if(!exQ.length){$('exercise-content').innerHTML=`<div style="text-align:center;padding:2rem;color:var(--text3)"><div style="font-size:2rem;margin-bottom:.75rem">📭</div><div>No exercises for this type</div><button class="btn btn-s" style="margin-top:1rem" onclick="goDetail(${curLesson})">← Back</button></div>`;return;}
+  if(!exQ.length){$('exercise-content').innerHTML=`<div style="text-align:center;padding:2rem;color:var(--text3)"><div style="font-size:2rem;margin-bottom:.75rem">📭</div><div>${T('no_ex')}</div><button class="btn btn-s" style="margin-top:1rem" onclick="goDetail(${curLesson})">${T('back')}</button></div>`;return;}
   renderQ();
 }
 function renderQ(){
@@ -838,29 +1200,29 @@ function renderQ(){
   const opts=shuf([item.a,...pool]);
   $('exercise-content').innerHTML=`<div class="quiz-card">
     <div class="ex-type-row">
-      <button class="ex-t-btn${exType==='phrases'?' on':''}" onclick="exType='phrases';startExercise()">Phrases</button>
-      <button class="ex-t-btn${exType==='kanji'?' on':''}" onclick="exType='kanji';startExercise()">Kanji</button>
-      <button class="ex-t-btn${exType==='grammar'?' on':''}" onclick="exType='grammar';startExercise()">Grammar</button>
+      <button class="ex-t-btn${exType==='phrases'?' on':''}" onclick="exType='phrases';startExercise()">${T('phrases_tab')}</button>
+      <button class="ex-t-btn${exType==='kanji'?' on':''}" onclick="exType='kanji';startExercise()">${T('kanji_tab')}</button>
+      <button class="ex-t-btn${exType==='grammar'?' on':''}" onclick="exType='grammar';startExercise()">${T('grammar_tab')}</button>
     </div>
-    <div class="quiz-score">Q ${exIdx+1}/${exQ.length} · Score: ${exScore}</div>
-    ${item.isJP?`<div class="quiz-char" onclick="speak('${esc(item.q).replace(/'/g,"\\'")}')"> ${esc(item.q)}</div><div class="quiz-txt">${item.r?`(${esc(item.r)}) `:''}What does this mean? (tap to hear)</div>`:`<div style="font-size:1rem;font-weight:600;color:var(--text);margin:1rem 0;font-family:var(--font-jp)">${esc(item.q)}</div>${item.ex?`<div style="font-size:.75rem;color:var(--text3);margin-bottom:.75rem;font-family:var(--font-jp)">${esc(item.ex)}</div>`:''}<div class="quiz-txt">Choose the correct meaning:</div>`}
+    <div class="quiz-score">${T('q')} ${exIdx+1}/${exQ.length} · ${T('score')}: ${exScore}</div>
+    ${item.isJP?`<div class="quiz-char" onclick="speak('${esc(item.q).replace(/'/g,"\\'")}')"> ${esc(item.q)}</div><div class="quiz-txt">${item.r?`(${esc(item.r)}) `:''}${T('what_mean')}</div>`:`<div style="font-size:1rem;font-weight:600;color:var(--text);margin:1rem 0;font-family:var(--font-jp)">${esc(item.q)}</div>${item.ex?`<div style="font-size:.75rem;color:var(--text3);margin-bottom:.75rem;font-family:var(--font-jp)">${esc(item.ex)}</div>`:''}<div class="quiz-txt">${T('choose_meaning')}</div>`}
     <div class="quiz-opts" id="opts"></div>
     <div class="quiz-fb" id="fb"></div>
-    <button class="btn-next" id="nxt" onclick="exIdx++;renderQ()" disabled>Next →</button>
+    <button class="btn-next" id="nxt" onclick="exIdx++;renderQ()" disabled>${T("next")}</button>
   </div>`;
   const oc=$('opts');
-  opts.forEach(opt=>{const b=document.createElement('button');b.className='quiz-opt';b.textContent=opt;b.addEventListener('click',()=>{if(!$('nxt').disabled)return;document.querySelectorAll('.quiz-opt').forEach(x=>x.disabled=true);const ok=opt===item.a;b.classList.add(ok?'ok':'ng');if(!ok)document.querySelectorAll('.quiz-opt').forEach(x=>{if(x.textContent===item.a)x.classList.add('ok');});$('fb').textContent=ok?'✓ Correct!':'✗ Answer: '+item.a;$('fb').className='quiz-fb '+(ok?'ok':'ng');if(ok){exScore++;XP.add(5);Streak.touch();}$('nxt').disabled=false;});oc.appendChild(b);});
+  opts.forEach(opt=>{const b=document.createElement('button');b.className='quiz-opt';b.textContent=opt;b.addEventListener('click',()=>{if(!$('nxt').disabled)return;document.querySelectorAll('.quiz-opt').forEach(x=>x.disabled=true);const ok=opt===item.a;b.classList.add(ok?'ok':'ng');if(!ok)document.querySelectorAll('.quiz-opt').forEach(x=>{if(x.textContent===item.a)x.classList.add('ok');});$('fb').textContent=ok?T('correct'):T('answer')+item.a;$('fb').className='quiz-fb '+(ok?'ok':'ng');if(ok){exScore++;XP.add(5);Streak.touch();}$('nxt').disabled=false;});oc.appendChild(b);});
 }
 function showResult(){
   const pct=Math.round(exScore/exQ.length*100);
   $('exercise-content').innerHTML=`<div class="quiz-card" style="text-align:center">
     <div style="font-size:3rem;margin:.5rem 0">${pct>=80?'🎉':pct>=60?'💪':'📚'}</div>
-    <div style="font-size:1.1rem;font-weight:700;margin-bottom:5px">Exercise Complete!</div>
-    <div style="font-size:.9rem;color:var(--text2);margin-bottom:3px">${exScore}/${exQ.length} correct</div>
+    <div style="font-size:1.1rem;font-weight:700;margin-bottom:5px">${T('ex_complete')}</div>
+    <div style="font-size:.9rem;color:var(--text2);margin-bottom:3px">${exScore}/${exQ.length} ${T('correct_count')}</div>
     <div style="font-size:1.8rem;font-weight:700;color:${pct>=70?'var(--green)':'var(--amber)'};margin-bottom:1rem">${pct}%</div>
-    <button class="btn btn-p btn-full" onclick="exIdx=0;exScore=0;exQ=shuf(exQ);renderQ()" style="margin-bottom:7px">↩ Try Again</button>
-    <button class="btn btn-s btn-full" onclick="goDetail(${curLesson})">← Back to Lesson</button>
-    ${pct>=70?`<button class="btn btn-t btn-full" style="margin-top:7px" onclick="setDone(${curLesson},true);buildDrawerLessons();goLessons()">✓ Complete & Continue →</button>`:''}
+    <button class="btn btn-p btn-full" onclick="exIdx=0;exScore=0;exQ=shuf(exQ);renderQ()" style="margin-bottom:7px">${T('try_again')}</button>
+    <button class="btn btn-s btn-full" onclick="goDetail(${curLesson})">${T('back_lesson')}</button>
+    ${pct>=70?`<button class="btn btn-t btn-full" style="margin-top:7px" onclick="setDone(${curLesson},true);buildDrawerLessons();goLessons()">${T('complete_continue')}</button>`:''}
   </div>`;
 }
 
@@ -869,7 +1231,7 @@ function showResult(){
 // ═══════════════════════════════════
 function startReview(){
   const all=[];
-  LESSONS.forEach(L=>{(L.phrases||[]).slice(0,3).forEach(p=>all.push({q:p.jp,a:p.en,isJP:true,lessonNum:L.num}));});
+  LESSONS.forEach(L=>{(L.phrases||[]).slice(0,3).forEach(p=>all.push({q:p.jp,a:tr(p.en),isJP:true,lessonNum:L.num}));});
   exQ=shuf(all).slice(0,15);exIdx=0;exScore=0;
   renderReviewQ();
 }
@@ -878,29 +1240,33 @@ function renderReviewQ(){
     const pct=Math.round(exScore/exQ.length*100);
     $('review-content').innerHTML=`<div class="quiz-card" style="text-align:center">
       <div style="font-size:3rem;margin:.5rem 0">${pct>=80?'🎉':pct>=60?'💪':'📚'}</div>
-      <div style="font-size:1.1rem;font-weight:700;margin-bottom:5px">Review Complete!</div>
-      <div style="font-size:.9rem;color:var(--text2);margin-bottom:3px">${exScore}/${exQ.length} correct</div>
+      <div style="font-size:1.1rem;font-weight:700;margin-bottom:5px">${T('review_complete')}</div>
+      <div style="font-size:.9rem;color:var(--text2);margin-bottom:3px">${exScore}/${exQ.length} ${T('correct_count')}</div>
       <div style="font-size:1.8rem;font-weight:700;color:${pct>=70?'var(--green)':'var(--amber)'};margin-bottom:1rem">${pct}%</div>
-      <button class="btn btn-p btn-full" onclick="startReview()" style="margin-bottom:7px">↩ New Review</button>
-      <button class="btn btn-s btn-full" onclick="goCharts()">← Home</button>
+      <button class="btn btn-p btn-full" onclick="startReview()" style="margin-bottom:7px">${T('new_review')}</button>
+      <button class="btn btn-s btn-full" onclick="goCharts()">${T('back_home')}</button>
     </div>`;return;
   }
   const item=exQ[exIdx];
   const pool=shuf(allAnswers('phrases').filter(a=>a!==item.a)).slice(0,3);
   const opts=shuf([item.a,...pool]);
   $('review-content').innerHTML=`<div class="quiz-card">
-    <div style="font-size:.65rem;color:var(--accent2);margin-bottom:.5rem">🧠 REVIEW · Lesson ${item.lessonNum}</div>
-    <div class="quiz-score">Q ${exIdx+1}/${exQ.length} · Score: ${exScore}</div>
+    <div style="font-size:.65rem;color:var(--accent2);margin-bottom:.5rem">${T('review_mode')} · Lesson ${item.lessonNum}</div>
+    <div class="quiz-score">${T('q')} ${exIdx+1}/${exQ.length} · ${T('score')}: ${exScore}</div>
     <div class="quiz-char" onclick="speak('${esc(item.q).replace(/'/g,"\\'")}')"> ${esc(item.q)}</div>
-    <div class="quiz-txt">What does this mean? (tap to hear)</div>
+    <div class="quiz-txt">${T('what_mean')}</div>
     <div class="quiz-opts" id="rv-opts"></div>
     <div class="quiz-fb" id="rv-fb"></div>
-    <button class="btn-next" id="rv-nxt" onclick="exIdx++;renderReviewQ()" disabled>Next →</button>
+    <button class="btn-next" id="rv-nxt" onclick="exIdx++;renderReviewQ()" disabled>${T("next")}</button>
   </div>`;
   const oc=$('rv-opts');
-  opts.forEach(opt=>{const b=document.createElement('button');b.className='quiz-opt';b.textContent=opt;b.addEventListener('click',()=>{if(!$('rv-nxt').disabled)return;document.querySelectorAll('.quiz-opt').forEach(x=>x.disabled=true);const ok=opt===item.a;b.classList.add(ok?'ok':'ng');if(!ok)document.querySelectorAll('.quiz-opt').forEach(x=>{if(x.textContent===item.a)x.classList.add('ok');});$('rv-fb').textContent=ok?'✓ Correct!':'✗ Answer: '+item.a;$('rv-fb').className='quiz-fb '+(ok?'ok':'ng');if(ok){exScore++;XP.add(5);Streak.touch();}$('rv-nxt').disabled=false;});oc.appendChild(b);});
+  opts.forEach(opt=>{const b=document.createElement('button');b.className='quiz-opt';b.textContent=opt;b.addEventListener('click',()=>{if(!$('rv-nxt').disabled)return;document.querySelectorAll('.quiz-opt').forEach(x=>x.disabled=true);const ok=opt===item.a;b.classList.add(ok?'ok':'ng');if(!ok)document.querySelectorAll('.quiz-opt').forEach(x=>{if(x.textContent===item.a)x.classList.add('ok');});$('rv-fb').textContent=ok?T('correct'):T('answer')+item.a;$('rv-fb').className='quiz-fb '+(ok?'ok':'ng');if(ok){exScore++;XP.add(5);Streak.touch();}$('rv-nxt').disabled=false;});oc.appendChild(b);});
 }
 
+
+
+function toggleLangMenu(){ $('lang-menu').classList.toggle('on'); }
+function closeLangMenu(){ $('lang-menu').classList.remove('on'); }
 
 // ═══════════════════════════════════
 // XP / STREAK / BADGES SYSTEM
@@ -999,26 +1365,26 @@ function renderGamesMenu(){
     <div class="game-menu">
       <div class="game-card" onclick="startMatch('h')">
         <div class="gc-icon">🎴</div>
-        <div class="gc-title">Matching</div>
-        <div class="gc-sub">Hiragana pairs</div>
+        <div class="gc-title">${T('matching')}</div>
+        <div class="gc-sub">${T('h_pairs')}</div>
       </div>
       <div class="game-card" onclick="startMatch('k')">
         <div class="gc-icon">🀄</div>
-        <div class="gc-title">Matching</div>
-        <div class="gc-sub">Katakana pairs</div>
+        <div class="gc-title">${T('matching')}</div>
+        <div class="gc-sub">${T('k_pairs')}</div>
       </div>
       <div class="game-card" onclick="startSoundQuiz('h')">
         <div class="gc-icon">🔊</div>
-        <div class="gc-title">Sound Quiz</div>
-        <div class="gc-sub">Hear → find kana</div>
+        <div class="gc-title">${T('sound_quiz_menu')}</div>
+        <div class="gc-sub">${T('hear_find')}</div>
       </div>
       <div class="game-card" onclick="startSoundQuiz('k')">
         <div class="gc-icon">🎧</div>
-        <div class="gc-title">Sound Quiz</div>
-        <div class="gc-sub">Katakana sounds</div>
+        <div class="gc-title">${T('sound_quiz_menu')}</div>
+        <div class="gc-sub">${T('k_sounds')}</div>
       </div>
     </div>
-    <div class="sec-label">🏅 Badges (${earned}/${BADGES.length})</div>
+    <div class="sec-label">${T('badges')} (${earned}/${BADGES.length})</div>
     <div class="badge-grid">
       ${BADGES.map(b=>{
         const got=localStorage.getItem('badge_earned_'+b.id)==='1';
@@ -1055,14 +1421,14 @@ function startMatch(type){
 
 function renderMatch(){
   $('games-content').innerHTML=`
-    <button class="btn-back" onclick="renderGamesMenu()">← Games</button>
+    <button class="btn-back" onclick="renderGamesMenu()">${T('back_games')}</button>
     <div style="text-align:center;margin-bottom:.75rem">
-      <div style="font-size:1rem;font-weight:700">🎴 Matching — ${mType==='h'?'ひらがな':'カタカナ'}</div>
-      <div style="font-size:.7rem;color:var(--text3);margin-top:2px">Match kana with its sound!</div>
+      <div style="font-size:1rem;font-weight:700">${T('match_title')} — ${mType==='h'?'ひらがな':'カタカナ'}</div>
+      <div style="font-size:.7rem;color:var(--text3);margin-top:2px">${T('match_sub')}</div>
     </div>
     <div class="match-stats">
-      <span>Moves: <b id="m-moves">${mMoves}</b></span>
-      <span>Pairs: <b id="m-pairs">${mMatched}/6</b></span>
+      <span>${T('moves')}: <b id="m-moves">${mMoves}</b></span>
+      <span>${T('pairs')}: <b id="m-pairs">${mMatched}/6</b></span>
     </div>
     <div class="match-board" id="m-board">
       ${mTiles.map((t,i)=>`
@@ -1117,11 +1483,11 @@ function matchWin(){
     $('games-content').innerHTML=`
       <div class="quiz-card" style="text-align:center">
         <div style="font-size:3.5rem;margin:.5rem 0">🎉</div>
-        <div style="font-size:1.2rem;font-weight:700;margin-bottom:6px">You Win!</div>
-        <div style="font-size:.85rem;color:var(--text2);margin-bottom:4px">Completed in ${mMoves} moves</div>
-        <div style="font-size:1rem;font-weight:700;color:var(--amber);margin-bottom:1.25rem">+${bonus} bonus XP! 🌟</div>
-        <button class="btn btn-p btn-full" onclick="startMatch('${mType}')" style="margin-bottom:7px">↩ Play Again</button>
-        <button class="btn btn-s btn-full" onclick="renderGamesMenu()">← Games Menu</button>
+        <div style="font-size:1.2rem;font-weight:700;margin-bottom:6px">${T('you_win')}</div>
+        <div style="font-size:.85rem;color:var(--text2);margin-bottom:4px">${T('completed_in')}: ${mMoves}</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--amber);margin-bottom:1.25rem">+${bonus} ${T('bonus_xp')}</div>
+        <button class="btn btn-p btn-full" onclick="startMatch('${mType}')" style="margin-bottom:7px">${T('play_again')}</button>
+        <button class="btn btn-s btn-full" onclick="renderGamesMenu()">${T('games_menu')}</button>
       </div>`;
   }, 600);
 }
@@ -1147,18 +1513,18 @@ function nextSoundQ(){
   const opts=shuf([correct,...wrongs]);
 
   $('games-content').innerHTML=`
-    <button class="btn-back" onclick="renderGamesMenu()">← Games</button>
+    <button class="btn-back" onclick="renderGamesMenu()">${T('back_games')}</button>
     <div class="quiz-card">
-      <div style="font-size:.65rem;color:var(--accent2);margin-bottom:.4rem">🔊 SOUND QUIZ — ${sqType==='h'?'ひらがな':'カタカナ'}</div>
-      <div class="quiz-score">Round ${sqRound}/${sqTotal} · Score: ${sqScore}</div>
-      <div style="font-size:.85rem;color:var(--text2);margin-top:.5rem">Listen and find the kana!</div>
+      <div style="font-size:.65rem;color:var(--accent2);margin-bottom:.4rem">${T('sound_quiz')} — ${sqType==='h'?'ひらがな':'カタカナ'}</div>
+      <div class="quiz-score">${T('round')} ${sqRound}/${sqTotal} · ${T('score')}: ${sqScore}</div>
+      <div style="font-size:.85rem;color:var(--text2);margin-top:.5rem">${T('listen_find')}</div>
       <button class="sound-play-big" onclick="speak('${sqAnswer}',0.75)">🔊</button>
-      <div style="font-size:.68rem;color:var(--text3);margin-bottom:1rem">(tap to replay)</div>
+      <div style="font-size:.68rem;color:var(--text3);margin-bottom:1rem">${T('tap_replay')}</div>
       <div class="sound-opts" id="sq-opts">
         ${opts.map(o=>`<button class="sound-opt" onclick="checkSound(this,'${esc(o[0])}')">${esc(o[0])}</button>`).join('')}
       </div>
       <div class="quiz-fb" id="sq-fb"></div>
-      <button class="btn-next" id="sq-nxt" onclick="nextSoundQ()" disabled>Next →</button>
+      <button class="btn-next" id="sq-nxt" onclick="nextSoundQ()" disabled>${T("next")}</button>
     </div>`;
   setTimeout(()=>speak(sqAnswer,0.75), 400);
 }
@@ -1170,7 +1536,7 @@ function checkSound(el, chosen){
   const ok=chosen===sqAnswer;
   el.classList.add(ok?'ok':'ng');
   if(!ok) document.querySelectorAll('.sound-opt').forEach(b=>{if(b.textContent===sqAnswer)b.classList.add('ok');});
-  $('sq-fb').textContent=ok?'✓ Correct!':'✗ It was: '+sqAnswer;
+  $('sq-fb').textContent=ok?T('correct'):T('it_was')+sqAnswer;
   $('sq-fb').className='quiz-fb '+(ok?'ok':'ng');
   if(ok){
     sqScore++;
@@ -1190,12 +1556,12 @@ function soundQuizEnd(){
   $('games-content').innerHTML=`
     <div class="quiz-card" style="text-align:center">
       <div style="font-size:3.5rem;margin:.5rem 0">${pct>=80?'🎉':pct>=60?'💪':'📚'}</div>
-      <div style="font-size:1.2rem;font-weight:700;margin-bottom:6px">Sound Quiz Done!</div>
-      <div style="font-size:.85rem;color:var(--text2);margin-bottom:4px">${sqScore}/${sqTotal} correct</div>
+      <div style="font-size:1.2rem;font-weight:700;margin-bottom:6px">${T('sound_done')}</div>
+      <div style="font-size:.85rem;color:var(--text2);margin-bottom:4px">${sqScore}/${sqTotal} ${T('correct_count')}</div>
       <div style="font-size:1.8rem;font-weight:700;color:${pct>=70?'var(--green)':'var(--amber)'};margin-bottom:.5rem">${pct}%</div>
       ${bonus?`<div style="font-size:.85rem;color:var(--amber);font-weight:700;margin-bottom:1rem">+${bonus} bonus XP! 🌟</div>`:'<div style="margin-bottom:1rem"></div>'}
-      <button class="btn btn-p btn-full" onclick="startSoundQuiz('${sqType}')" style="margin-bottom:7px">↩ Play Again</button>
-      <button class="btn btn-s btn-full" onclick="renderGamesMenu()">← Games Menu</button>
+      <button class="btn btn-p btn-full" onclick="startSoundQuiz('${sqType}')" style="margin-bottom:7px">${T('play_again')}</button>
+      <button class="btn btn-s btn-full" onclick="renderGamesMenu()">${T('games_menu')}</button>
     </div>`;
 }
 
@@ -1209,6 +1575,12 @@ buildDrawerLessons();
 renderChart();
 updateXPBar();
 checkBadges();
+// language init
+$('lang-btn').addEventListener('click', toggleLangMenu);
+document.addEventListener('click', (e)=>{ if(!$('lang-menu').contains(e.target) && e.target!==$('lang-btn')) closeLangMenu(); });
+$('lang-btn').textContent = LANG==='si'?'සිං':LANG==='ta'?'த':'EN';
+document.querySelectorAll('.lang-opt').forEach(o=>o.classList.toggle('on',o.dataset.lang===LANG));
+applyLang();
 goCharts();
 </script>
 </body>

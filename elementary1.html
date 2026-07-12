@@ -327,13 +327,14 @@ body{min-height:100vh;overflow-x:hidden;padding-bottom:calc(var(--tab) + env(saf
   <div class="dr-sec">
     <div class="dr-sec-title">Screens</div>
     <div class="dr-item" id="menu-charts" onclick="goCharts();closeDrawer()">
-      <span class="dr-icon">🔤</span>
-      <div><div class="dr-title">Hiragana / Katakana</div><div class="dr-sub">Charts with audio</div></div>
+      <span class="dr-icon">漢</span>
+      <div><div class="dr-title">Kanji Words</div><div class="dr-sub">All lesson kanji · tap to hear</div></div>
     </div>
-    <div class="dr-item" id="menu-lessons" onclick="goLessons();closeDrawer()">
-      <span class="dr-icon">📖</span>
-      <div><div class="dr-title">All Lessons</div><div class="dr-sub">Elementary 1 A2 — 18 lessons</div></div>
-    </div>
+    <a class="dr-item" id="menu-counting" href="counting.html" style="color:inherit">
+      <span class="dr-icon">🔢</span>
+      <div><div class="dr-title">Counting — 数字</div><div class="dr-sub">Numbers · counters · days · age</div></div>
+      <span class="dr-badge new">NEW</span>
+    </a>
     <div class="dr-item" id="menu-games" onclick="goGames();closeDrawer()">
       <span class="dr-icon">🎮</span>
       <div><div class="dr-title">Games</div><div class="dr-sub">Matching · Sound quiz · Badges</div></div>
@@ -368,7 +369,7 @@ body{min-height:100vh;overflow-x:hidden;padding-bottom:calc(var(--tab) + env(saf
 <!-- NAVBAR -->
 <nav class="navbar">
   <div class="nb-left">
-    <button class="icon-btn" onclick="goCharts()" title="Home">🏠</button>
+    <button class="icon-btn" onclick="goLessons()" title="Home">🏠</button>
     <div>
       <div class="nb-title" id="nb-title">いろどり 初級1 A2</div>
       <div class="nb-sub" id="nb-sub">Irodori Elementary 1</div>
@@ -388,20 +389,16 @@ body{min-height:100vh;overflow-x:hidden;padding-bottom:calc(var(--tab) + env(saf
 </div>
 
 <!-- SCREEN: CHARTS (HOME) -->
-<div class="screen active" id="s-charts">
+<div class="screen" id="s-charts">
   <div class="page">
     <div id="xp-bar-home"></div>
-    <div class="chart-type-row">
-      <button class="chart-type-btn on" id="chart-h-btn" onclick="setChartType('h')">ひらがな Hiragana</button>
-      <button class="chart-type-btn" id="chart-k-btn" onclick="setChartType('k')">カタカナ Katakana</button>
-    </div>
-    <div class="chart-hint" id="chart-hint">Tap any character to hear its sound 🔊</div>
+    <div class="chart-hint" id="chart-hint">Tap any kanji to hear its sound 🔊</div>
     <div id="chart-grid"></div>
   </div>
 </div>
 
 <!-- SCREEN: LESSONS LIST -->
-<div class="screen" id="s-lessons">
+<div class="screen active" id="s-lessons">
   <div class="page">
     <div class="book-banner">
       <div class="book-cover">🌿</div>
@@ -435,7 +432,7 @@ body{min-height:100vh;overflow-x:hidden;padding-bottom:calc(var(--tab) + env(saf
 <!-- SCREEN: REVIEW -->
 <div class="screen" id="s-review">
   <div class="page">
-    <button class="btn-back" onclick="goCharts()">← Home</button>
+    <button class="btn-back" onclick="goLessons()">← Home</button>
     <div id="review-content"></div>
   </div>
 </div>
@@ -453,13 +450,13 @@ body{min-height:100vh;overflow-x:hidden;padding-bottom:calc(var(--tab) + env(saf
 
 <!-- TAB BAR -->
 <nav class="tabbar">
-  <button class="tab-btn on" id="tab-charts" onclick="goCharts()">
-    <span class="ti">🔤</span>Charts
+  <button class="tab-btn" id="tab-charts" onclick="goCharts()">
+    <span class="ti">漢</span>Kanji
   </button>
   <button class="tab-btn" id="tab-games" onclick="goGames()">
     <span class="ti">🎮</span>Games
   </button>
-  <button class="tab-btn" id="tab-lessons" onclick="goLessons()">
+  <button class="tab-btn on" id="tab-lessons" onclick="goLessons()">
     <span class="ti">📖</span>Lessons
   </button>
   <button class="tab-btn" id="tab-review" onclick="goReview()">
@@ -479,6 +476,12 @@ if(window.speechSynthesis){
 function speak(txt,rate){
   if(!window.speechSynthesis)return;
   speechSynthesis.cancel();
+  // Blanks (___ or 〜) → say ナニナニ once; strip parentheses like 便利(な)→便利な
+  txt = String(txt).replace(/[_＿]+/g, 'ナニナニ');
+  txt = txt.replace(/[〜~]+/g, 'ナニナニ');
+  txt = txt.replace(/[（(]([^）)]*)[）)]/g, '$1');
+  txt = txt.replace(/・/g, ' ');
+  txt = txt.replace(/…/g, '');
   const u=new SpeechSynthesisUtterance(txt);
   u.lang='ja-JP';u.rate=rate||0.8;
   if(ttsV.length)u.voice=ttsV[0];
@@ -641,6 +644,263 @@ function T(key){ return (UI[LANG] && UI[LANG][key]) || UI.en[key] || key; }
 // ── Phrase/kanji/cando translations (si/ta) ──
 // Keyed by English string → {si, ta}
 const TR = {
+// ── A2 (Elementary 1) meanings ──
+  '(She) said she loves it': {si:'එයා ඒක ගොඩක් කැමතියි කිව්වා', ta:'அவள் அதை மிகவும் பிடிக்கும் என்றாள்'},
+  'A charm my brother gave me': {si:'අයියා දුන්න සුරක්ෂා වස්තුවක්', ta:'அண்ணன் கொடுத்த காப்பு'},
+  'A decoration I brought from Nepal': {si:'නේපාලයෙන් ගෙනාපු සැරසිල්ලක්', ta:'நேபாளத்திலிருந்து கொண்டு வந்த அலங்காரம்'},
+  'A little': {si:'ටිකක්', ta:'கொஞ்சம்'},
+  'AM / Morning': {si:'පෙ.ව. / උදේ', ta:'முற்பகல் / காலை'},
+  'Address': {si:'ලිපිනය', ta:'முகவரி'},
+  'Alcohol / Sake': {si:'මත්පැන් / සකේ', ta:'மது / சாகே'},
+  'All / Everything': {si:'සියල්ල', ta:'அனைத்தும்'},
+  'Anything is fine': {si:'ඕනෑම එකක් හොඳයි', ta:'எதுவும் பரவாயில்லை'},
+  'Autumn': {si:'සරත් සමය', ta:'இலையுதிர் காலம்'},
+  'Bad': {si:'නරක', ta:'மோசம்'},
+  'Bank': {si:'බැංකුව', ta:'வங்கி'},
+  'Because the scenery is beautiful': {si:'දර්ශනය ලස්සන නිසා', ta:'காட்சி அழகாக இருப்பதால்'},
+  'Beef': {si:'හරක් මස්', ta:'மாட்டிறைச்சி'},
+  'Birthday': {si:'උපන්දිනය', ta:'பிறந்தநாள்'},
+  'Body': {si:'ශරීරය', ta:'உடல்'},
+  'Boy': {si:'පිරිමි ළමයා', ta:'சிறுவன்'},
+  'Busy': {si:'කාර්යබහුල', ta:'பிஸியாக'},
+  'Cafeteria': {si:'කෑම ශාලාව', ta:'உணவகம்'},
+  'Car': {si:'කාරය', ta:'கார்'},
+  'Celebration': {si:'සැමරුම', ta:'கொண்டாட்டம்'},
+  'Classroom': {si:'පන්ති කාමරය', ta:'வகுப்பறை'},
+  'Clock / Watch': {si:'ඔරලෝසුව', ta:'கடிகாரம்'},
+  'Cold': {si:'සීතල', ta:'குளிர்'},
+  'Congratulations': {si:'සුබ පැතුම්!', ta:'வாழ்த்துகள்!'},
+  'Contact info': {si:'සම්බන්ධතා තොරතුරු', ta:'தொடர்பு விவரம்'},
+  'Convenience': {si:'පහසුව', ta:'வசதி'},
+  'Convenient': {si:'පහසු', ta:'வசதியான'},
+  'Cooking / Dish': {si:'ආහාර පිසීම / කෑම', ta:'சமையல் / உணவு'},
+  'Cooking method': {si:'පිසින ක්‍රමය', ta:'சமைக்கும் முறை'},
+  'Copier': {si:'පිටපත් යන්ත්‍රය', ta:'நகல் இயந்திரம்'},
+  'Could you check it for me?': {si:'මට මේක check කරලා දෙන්න පුළුවන්ද?', ta:'எனக்காக சரிபார்க்க முடியுமா?'},
+  'Desk': {si:'මේසය', ta:'மேசை'},
+  'Difficult': {si:'අමාරු', ta:'கடினம்'},
+  'Doctor': {si:'වෛද්‍යවරයා', ta:'மருத்துவர்'},
+  'Drinks': {si:'බීම', ta:'பானங்கள்'},
+  'Ear': {si:'කන', ta:'காது'},
+  'Early / Quickly': {si:'ඉක්මනින්', ta:'சீக்கிரம்'},
+  'Egg': {si:'බිත්තරය', ta:'முட்டை'},
+  'Electricity / Light': {si:'විදුලිය / ලයිට්', ta:'மின்சாரம் / விளக்கு'},
+  'English': {si:'ඉංග්‍රීසි', ta:'ஆங்கிலம்'},
+  'Errand / Business': {si:'වැඩක්', ta:'வேலை'},
+  'Evening': {si:'හවස', ta:'மாலை'},
+  'Every day': {si:'හැමදාම', ta:'தினமும்'},
+  'Eye': {si:'ඇස', ta:'கண்'},
+  'Face': {si:'මුහුණ', ta:'முகம்'},
+  'Family': {si:'පවුල', ta:'குடும்பம்'},
+  'Famous': {si:'ප්‍රසිද්ධ', ta:'பிரபலமான'},
+  'Far': {si:'දුර', ta:'தூரம்'},
+  'Fever': {si:'උණ', ta:'காய்ச்சல்'},
+  'Few': {si:'ටිකයි', ta:'குறைவு'},
+  'Flower': {si:'මල', ta:'பூ'},
+  'Foot / Leg': {si:'කකුල', ta:'கால்'},
+  'Free of charge': {si:'නොමිලේ', ta:'இலவசம்'},
+  'Full name': {si:'සම්පූර්ණ නම', ta:'முழு பெயர்'},
+  'Fun': {si:'විනෝදජනක', ta:'மகிழ்ச்சி'},
+  'Gate': {si:'ගේට්ටුව', ta:'வாயில்'},
+  'Girl': {si:'ගැහැණු ළමයා', ta:'சிறுமி'},
+  'Hand': {si:'අත', ta:'கை'},
+  'Happy': {si:'සතුටු', ta:'மகிழ்ச்சியான'},
+  'Have you already been?': {si:'දැනටමත් ගිහින් තියෙනවද?', ta:'ஏற்கனவே போயிருக்கிறீர்களா?'},
+  'Have you ever watched pro wrestling?': {si:'Pro wrestling බලලා තියෙනවද?', ta:'ப்ரோ ரெஸ்லிங் பார்த்திருக்கிறீர்களா?'},
+  'Head': {si:'හිස', ta:'தலை'},
+  'Healthy / Fine': {si:'සනීපෙන්', ta:'நலமாக'},
+  'Hello! (at entrance)': {si:'ගෙදර ඇතුළු වෙද්දි කියන ආචාරය', ta:'வீட்டு வாசலில் சொல்லும் வணக்கம்'},
+  'High school': {si:'උසස් පාසල', ta:'உயர்நிலைப் பள்ளி'},
+  'Hospital': {si:'රෝහල', ta:'மருத்துவமனை'},
+  'Hot': {si:'උණුසුම්', ta:'சூடு'},
+  'Hot water': {si:'උණු වතුර', ta:'சுடு நீர்'},
+  'How about 6 o\'clock?': {si:'6ට කොහොමද?', ta:'6 மணிக்கு எப்படி?'},
+  'How are you?': {si:'කොහොමද සැප සනීප?', ta:'எப்படி இருக்கிறீர்கள்?'},
+  'How long will it take?': {si:'කොච්චර වෙලා යයිද?', ta:'எவ்வளவு நேரம் ஆகும்?'},
+  'Husband': {si:'ස්වාමිපුරුෂයා', ta:'கணவர்'},
+  'I am good at conversation': {si:'මම කතාබහට දක්ෂයි', ta:'நான் உரையாடலில் திறமையானவன்'},
+  'I am learning ikebana': {si:'මම ikebana ඉගෙන ගන්නවා', ta:'நான் இகெபானா கற்கிறேன்'},
+  'I am not good with heat': {si:'මට රස්නේ අමාරුයි', ta:'எனக்கு வெப்பம் பிடிக்காது'},
+  'I came last September': {si:'මම ගිය සැප්තැම්බර් ආවා', ta:'நான் கடந்த செப்டம்பரில் வந்தேன்'},
+  'I can speak Japanese and English': {si:'මට ජපන් සහ ඉංග්‍රීසි පුළුවන්', ta:'எனக்கு ஜப்பானியம், ஆங்கிலம் தெரியும்'},
+  'I don\'t know how to write it': {si:'මේක ලියන හැටි දන්නේ නෑ', ta:'எப்படி எழுதுவது தெரியவில்லை'},
+  'I drank too much yesterday': {si:'ඊයේ වැඩිපුර බිව්වා', ta:'நேற்று அதிகம் குடித்தேன்'},
+  'I got it from a friend': {si:'යාළුවෙක්ගෙන් ලැබුණා', ta:'நண்பரிடமிருந்து கிடைத்தது'},
+  'I have a fever and my throat hurts': {si:'උණයි, උගුරත් රිදෙනවා', ta:'காய்ச்சல், தொண்டை வலி'},
+  'I have to go': {si:'මට යන්න වෙනවා', ta:'நான் போக வேண்டும்'},
+  'I heard your baby was born': {si:'බබා ලැබුණා කියලා ආරංචියි', ta:'குழந்தை பிறந்ததாக கேள்விப்பட்டேன்'},
+  'I like autumn the most': {si:'මම වැඩියෙන්ම කැමති සරත් සමයට', ta:'எனக்கு இலையுதிர் காலம் மிகவும் பிடிக்கும்'},
+  'I like playing games': {si:'මම games ගහන්න කැමතියි', ta:'எனக்கு கேம் விளையாட பிடிக்கும்'},
+  'I studied Japanese with anime': {si:'මම anime වලින් ජපන් ඉගෙන ගත්තා', ta:'அனிமே மூலம் ஜப்பானியம் படித்தேன்'},
+  'I studied when I was in high school': {si:'උසස් පාසලේදී ඉගෙන ගත්තා', ta:'உயர்நிலைப் பள்ளியில் படித்தேன்'},
+  'I think it\'s good': {si:'ඒක හොඳයි කියලා හිතනවා', ta:'அது நல்லது என்று நினைக்கிறேன்'},
+  'I try not to eat too much': {si:'වැඩිපුර නොකන්න බලනවා', ta:'அதிகம் சாப்பிடாமல் இருக்க முயற்சிக்கிறேன்'},
+  'I want to buy... (seeking help)': {si:'මට ගන්න ඕනෑ... (උදව් ඉල්ලීම)', ta:'வாங்க வேண்டும்... (உதவி கேட்டல்)'},
+  'I want to go to Maruichi department store...': {si:'මට Maruichi ෙකට යන්න ඕනෑ...', ta:'மாருইচி கடைக்கு போக வேண்டும்...'},
+  'I will be 30 minutes late': {si:'මම විනාඩි 30ක් පරක්කු වෙනවා', ta:'30 நிமிடம் தாமதமாவேன்'},
+  'I will buy and bring it': {si:'මම අරන් එන්නම්', ta:'நான் வாங்கி வருகிறேன்'},
+  'I work at a restaurant': {si:'මම restaurant ෙකක වැඩ කරනවා', ta:'நான் உணவகத்தில் வேலை செய்கிறேன்'},
+  'I would like to try...': {si:'මට try කරලා බලන්න ඕනෑ...', ta:'முயற்சி செய்ய விரும்புகிறேன்...'},
+  'Illness': {si:'රෝගය', ta:'நோய்'},
+  'Inconvenient': {si:'අපහසු', ta:'வசதியற்ற'},
+  'Inconvenient but beautiful': {si:'අපහසුයි ඒත් ලස්සනයි', ta:'வசதி இல்லை ஆனால் அழகு'},
+  'Ingredients': {si:'අමුද්‍රව්‍ය', ta:'பொருட்கள்'},
+  'Is 6:30 okay too?': {si:'6:30 වුණත් හරිද?', ta:'6:30 சரியா?'},
+  'Isn\'t it bland?': {si:'රස මදි නැද්ද?', ta:'சுவை குறைவா இல்லையா?'},
+  'It gets warm in spring': {si:'වසන්තයේ උණුසුම් වෙනවා', ta:'வசந்தத்தில் வெப்பமாகிறது'},
+  'It has been 1 year since I came to Japan': {si:'ජපානෙට ඇවිත් අවුරුද්දයි', ta:'ஜப்பான் வந்து ஒரு வருடம்'},
+  'It is still raining now': {si:'තාමත් වහිනවා', ta:'இன்னும் மழை பெய்கிறது'},
+  'It rained heavily yesterday': {si:'ඊයේ හොඳට වැස්සා', ta:'நேற்று கனமழை'},
+  'It will probably be sunny tomorrow': {si:'හෙට පායයි වගේ', ta:'நாளை வெயிலாக இருக்கலாம்'},
+  'It\'s good to take a lukewarm bath': {si:'මඳ උණුසුම් නෑමක් හොඳයි', ta:'மிதமான சூடான குளியல் நல்லது'},
+  'Japanese characters are difficult': {si:'ජපන් අකුරු අමාරුයි', ta:'ஜப்பானிய எழுத்துகள் கடினம்'},
+  'Jogging, doing yoga, etc.': {si:'Jogging, yoga වගේ දේවල්', ta:'ஜாகிங், யோகா போன்றவை'},
+  'Kanji': {si:'කන්ජි', ta:'கன்ஜி'},
+  'Last week': {si:'ගිය සතිය', ta:'கடந்த வாரம்'},
+  'Last year': {si:'ගිය අවුරුද්ද', ta:'கடந்த வருடம்'},
+  'Left': {si:'වම', ta:'இடது'},
+  'Life / Living': {si:'ජීවිතය', ta:'வாழ்க்கை'},
+  'Long time no see': {si:'ගොඩක් කාලෙකින්නේ!', ta:'நீண்ட நாட்களுக்கு பிறகு!'},
+  'Many': {si:'ගොඩක්', ta:'நிறைய'},
+  'Marriage': {si:'විවාහය', ta:'திருமணம்'},
+  'Match / Game': {si:'තරඟය', ta:'போட்டி'},
+  'May I go (and come back)?': {si:'ගිහින් එන්නද?', ta:'போய் வரலாமா?'},
+  'Meal': {si:'ආහාර වේල', ta:'உணவு'},
+  'Medicine': {si:'බෙහෙත', ta:'மருந்து'},
+  'Money': {si:'සල්ලි', ta:'பணம்'},
+  'Mouth': {si:'කට', ta:'வாய்'},
+  'Museum': {si:'කෞතුකාගාරය', ta:'அருங்காட்சியகம்'},
+  'Music': {si:'සංගීතය', ta:'இசை'},
+  'My hobby is watching movies': {si:'මගේ hobby එක films බලන එක', ta:'என் பொழுதுபோக்கு படம் பார்ப்பது'},
+  'Near': {si:'ළඟ', ta:'அருகில்'},
+  'Nice weather today, isn\'t it?': {si:'අද හොඳ කාලගුණයක් නේද?', ta:'இன்று நல்ல வானிலை இல்லையா?'},
+  'Not good at': {si:'දක්ෂ නෑ', ta:'திறமை இல்லை'},
+  'Not the first one, the second one': {si:'පළවෙනි එක නෙවෙයි, දෙවෙනි එක', ta:'முதலாவது இல்லை, இரண்டாவது'},
+  'Now': {si:'දැන්', ta:'இப்போது'},
+  'Number': {si:'අංකය', ta:'எண்'},
+  'Older brother': {si:'අයියා', ta:'அண்ணன்'},
+  'Older sister': {si:'අක්කා', ta:'அக்கா'},
+  'Once a week': {si:'සතියකට සැරයක්', ta:'வாரம் ஒருமுறை'},
+  'PM / Afternoon': {si:'ප.ව. / දහවල්', ta:'பிற்பகல்'},
+  'Painful': {si:'රිදෙනවා', ta:'வலி'},
+  'Parents': {si:'දෙමාපියන්', ta:'பெற்றோர்'},
+  'Park': {si:'උද්‍යානය', ta:'பூங்கா'},
+  'Person': {si:'පුද්ගලයා', ta:'நபர்'},
+  'Place': {si:'ස්ථානය', ta:'இடம்'},
+  'Plate': {si:'පිඟාන', ta:'தட்டு'},
+  'Please': {si:'කරුණාකර', ta:'தயவுசெய்து'},
+  'Please don\'t drive': {si:'වාහන පදවන්න එපා', ta:'வண்டி ஓட்ட வேண்டாம்'},
+  'Please don\'t meet people': {si:'මිනිසුන් හමුවෙන්න එපා', ta:'மக்களை சந்திக்க வேண்டாம்'},
+  'Please go straight': {si:'කෙළින්ම යන්න', ta:'நேராக செல்லுங்கள்'},
+  'Please try eating it': {si:'කාලා බලන්න', ta:'சாப்பிட்டு பாருங்கள்'},
+  'Pork': {si:'ඌරු මස්', ta:'பன்றி இறைச்சி'},
+  'Practice': {si:'පුහුණුව', ta:'பயிற்சி'},
+  'Quiet': {si:'නිශ්ශබ්ද', ta:'அமைதி'},
+  'Rain': {si:'වැස්ස', ta:'மழை'},
+  'Reason': {si:'හේතුව', ta:'காரணம்'},
+  'Reception': {si:'පිළිගැනීමේ ස්ථානය', ta:'வரவேற்பு'},
+  'Right': {si:'දකුණ', ta:'வலது'},
+  'Road': {si:'පාර', ta:'சாலை'},
+  'Salt is better': {si:'ලුණු හොඳයි', ta:'உப்பு நல்லது'},
+  'Same': {si:'සමාන', ta:'ஒரே மாதிரி'},
+  'School': {si:'පාසල', ta:'பள்ளி'},
+  'Season': {si:'සමය / ඍතුව', ta:'பருவம்'},
+  'Separately / Not really': {si:'විශේෂ නෑ', ta:'தனியாக / அப்படி இல்லை'},
+  'Shall I bring it?': {si:'මම ගේන්නද?', ta:'நான் கொண்டு வரட்டுமா?'},
+  'Shall we give a present?': {si:'තෑග්ගක් දෙමුද?', ta:'பரிசு கொடுப்போமா?'},
+  'Shall we go eat together?': {si:'එකට කන්න යමුද?', ta:'சேர்ந்து சாப்பிட போவோமா?'},
+  'Shop': {si:'කඩය', ta:'கடை'},
+  'Shrine': {si:'ශින්තෝ දේවාලය', ta:'ஷிண்டோ கோயில்'},
+  'Sleepy': {si:'නිදිමතයි', ta:'தூக்கம்'},
+  'Snow': {si:'හිම', ta:'பனி'},
+  'So I will be a bit late': {si:'ඒ නිසා ටිකක් පරක්කු වෙනවා', ta:'அதனால் கொஞ்சம் தாமதமாவேன்'},
+  'Sound': {si:'ශබ්දය', ta:'ஒலி'},
+  'Spicy': {si:'සැරයි', ta:'காரம்'},
+  'Spring': {si:'වසන්තය', ta:'வசந்தம்'},
+  'Station': {si:'දුම්රිය ස්ථානය', ta:'ரயில் நிலையம்'},
+  'Strong': {si:'ශක්තිමත්', ta:'வலிமை'},
+  'Student': {si:'ශිෂ්‍යයා', ta:'மாணவர்'},
+  'Summer': {si:'ගිම්හානය', ta:'கோடை'},
+  'Sunny': {si:'පායන', ta:'வெயில்'},
+  'Sweet': {si:'පැණි රස', ta:'இனிப்பு'},
+  'Sweet and delicious': {si:'පැණි රසයි, රසවත්', ta:'இனிப்பாக சுவையாக'},
+  'Take it before sleeping': {si:'නිදාගන්න කලින් බොන්න', ta:'தூங்கும் முன் எடுங்கள்'},
+  'Taste': {si:'රස', ta:'சுவை'},
+  'Tea': {si:'තේ', ta:'தேநீர்'},
+  'Teacher': {si:'ගුරුවරයා', ta:'ஆசிரியர்'},
+  'Temple': {si:'පන්සල', ta:'கோயில்'},
+  'Textbook': {si:'පෙළපොත', ta:'பாடநூல்'},
+  'Thank you for everything': {si:'හැමදේටම ස්තුතියි', ta:'எல்லாவற்றிற்கும் நன்றி'},
+  'That dish looks spicy': {si:'ඒ කෑම සැරයි වගේ', ta:'அந்த உணவு காரமாக தெரிகிறது'},
+  'That looks delicious': {si:'ඒක රසවත් වගේ', ta:'அது சுவையாக தெரிகிறது'},
+  'The light won\'t turn on...': {si:'ලයිට් එක පත්තු වෙන්නේ නෑ...', ta:'விளக்கு எரியவில்லை...'},
+  'The road is jammed, not moving': {si:'පාර block, යන්නේ නෑ', ta:'சாலை நெரிசல், நகரவில்லை'},
+  'The train stopped due to an accident': {si:'අනතුරක් නිසා දුම්රිය නැවතුණා', ta:'விபத்தால் ரயில் நின்றது'},
+  'This is a souvenir': {si:'මේක තෑග්ගක් (omiyage)', ta:'இது நினைவுப் பரிசு'},
+  'This medicine suppresses coughs': {si:'මේ බෙහෙත කැස්සට', ta:'இந்த மருந்து இருமலுக்கு'},
+  'This town is lively and convenient': {si:'මේ නගරය සජීවී සහ පහසුයි', ta:'இந்த ஊர் சுறுசுறுப்பாக வசதியாக உள்ளது'},
+  'Time': {si:'වේලාව', ta:'நேரம்'},
+  'Times (counter)': {si:'වතාවක් (ගණන)', ta:'முறை'},
+  'To arrive': {si:'පැමිණීම', ta:'வந்து சேர'},
+  'To be born': {si:'ඉපදීම', ta:'பிறக்க'},
+  'To choose': {si:'තෝරා ගැනීම', ta:'தேர்ந்தெடுக்க'},
+  'To climb': {si:'නැගීම', ta:'ஏற'},
+  'To convey': {si:'දැනුම් දීම', ta:'தெரிவிக்க'},
+  'To exercise': {si:'ව්‍යායාම කිරීම', ta:'உடற்பயிற்சி செய்ய'},
+  'To explain': {si:'පැහැදිලි කිරීම', ta:'விளக்க'},
+  'To fill in': {si:'පුරවන්න', ta:'நிரப்ப'},
+  'To finish': {si:'අවසන් වීම', ta:'முடிக்க'},
+  'To get up': {si:'නැගිටීම', ta:'எழுந்திருக்க'},
+  'To go out': {si:'පිටත් වීම', ta:'வெளியே செல்ல'},
+  'To hurry': {si:'ඉක්මන් වීම', ta:'அவசரப்பட'},
+  'To learn': {si:'ඉගෙනීම', ta:'கற்க'},
+  'To lend': {si:'ණයට දීම', ta:'கடன் கொடுக்க'},
+  'To make': {si:'හැදීම', ta:'செய்ய'},
+  'To move / work': {si:'චලනය / වැඩ කිරීම', ta:'இயங்க'},
+  'To participate': {si:'සහභාගී වීම', ta:'பங்கேற்க'},
+  'To pass (exam)': {si:'සමත් වීම', ta:'தேர்ச்சி பெற'},
+  'To prepare': {si:'සූදානම් කිරීම', ta:'தயார் செய்ய'},
+  'To return home': {si:'ගෙදර යාම', ta:'வீடு திரும்ப'},
+  'To run': {si:'දිවීම', ta:'ஓட'},
+  'To say': {si:'කීම', ta:'சொல்ல'},
+  'To sell': {si:'විකිණීම', ta:'விற்க'},
+  'To send / give a ride': {si:'යැවීම / ගෙනියාම', ta:'அனுப்ப / கூட்டிச்செல்ல'},
+  'To sleep': {si:'නිදා ගැනීම', ta:'தூங்க'},
+  'To smoke / inhale': {si:'දුම් බීම', ta:'புகை பிடிக்க'},
+  'To speak': {si:'කතා කිරීම', ta:'பேச'},
+  'To stop': {si:'නැවතීම', ta:'நிற்க'},
+  'To take': {si:'ගැනීම', ta:'எடுக்க'},
+  'To take along': {si:'අරගෙන යාම', ta:'எடுத்துச் செல்ல'},
+  'To teach': {si:'ඉගැන්වීම', ta:'கற்பிக்க'},
+  'To think': {si:'සිතීම', ta:'நினைக்க'},
+  'To use': {si:'භාවිතය', ta:'பயன்படுத்த'},
+  'To wait': {si:'බලා සිටීම', ta:'காத்திருக்க'},
+  'To walk': {si:'ඇවිදීම', ta:'நடக்க'},
+  'To work': {si:'වැඩ කිරීම', ta:'வேலை செய்ய'},
+  'To write': {si:'ලිවීම', ta:'எழுத'},
+  'Tomorrow': {si:'හෙට', ta:'நாளை'},
+  'Town': {si:'නගරය', ta:'ஊர்'},
+  'Train': {si:'දුම්රිය', ta:'ரயில்'},
+  'Turn left at the second traffic light': {si:'දෙවෙනි signal එකෙන් වමට', ta:'இரண்டாவது சிக்னலில் இடது'},
+  'University': {si:'විශ්වවිද්‍යාලය', ta:'பல்கலைக்கழகம்'},
+  'Vegetables': {si:'එළවළු', ta:'காய்கறிகள்'},
+  'Weather': {si:'කාලගුණය', ta:'வானிலை'},
+  'What does it mean?': {si:'තේරුම මොකද්ද?', ta:'என்ன அர்த்தம்?'},
+  'What should I do?': {si:'මම මොකද කරන්නේ?', ta:'நான் என்ன செய்வது?'},
+  'When you press the button, it starts': {si:'button එක ඔබද්දි පටන් ගන්නවා', ta:'பட்டனை அழுத்தினால் தொடங்கும்'},
+  'Which one is better?': {si:'මොකද්ද හොඳ?', ta:'எது நல்லது?'},
+  'Wife': {si:'බිරිඳ', ta:'மனைவி'},
+  'Wind': {si:'සුළඟ', ta:'காற்று'},
+  'Winter': {si:'ශීත සමය', ta:'குளிர்காலம்'},
+  'Work / Job': {si:'රැකියාව', ta:'வேலை'},
+  'Would it be alright to leave early?': {si:'කලින් යන්න පුළුවන්ද?', ta:'சீக்கிரம் கிளம்பலாமா?'},
+  'Years old': {si:'වයස අවුරුදු', ta:'வயது'},
+  'Yesterday': {si:'ඊයේ', ta:'நேற்று'},
+  'You can see various flowers': {si:'විවිධ මල් බලන්න පුළුවන්', ta:'பல்வேறு பூக்களை பார்க்கலாம்'},
+  'Younger brother': {si:'මල්ලී', ta:'தம்பி'},
+  'Younger sister': {si:'නංගී', ta:'தங்கை'},
+  'Zoo': {si:'සත්තු වත්ත', ta:'விலங்கியல் பூங்கா'},
+
   // Common phrase meanings
   'Hello':{si:'ආයුබෝවන්',ta:'வணக்கம்'},
   'Good morning':{si:'සුභ උදෑසනක්',ta:'காலை வணக்கம்'},
@@ -790,7 +1050,7 @@ function setLang(l){
 
 function applyLang(){
   // Tab bar
-  $('tab-charts').innerHTML='<span class="ti">🔤</span>'+T('charts');
+  $('tab-charts').innerHTML='<span class="ti">漢</span>'+T('kanji_tab');
   $('tab-games').innerHTML='<span class="ti">🎮</span>'+T('games');
   $('tab-lessons').innerHTML='<span class="ti">📖</span>'+T('lessons');
   $('tab-review').innerHTML='<span class="ti">🧠</span>'+T('review');
@@ -800,8 +1060,6 @@ function applyLang(){
   document.querySelector('.dr-head h2').textContent=T('menu_title');
   document.querySelector('#menu-charts .dr-title').textContent=T('m_charts');
   document.querySelector('#menu-charts .dr-sub').textContent=T('m_charts_sub');
-  document.querySelector('#menu-lessons .dr-title').textContent=T('m_lessons');
-  document.querySelector('#menu-lessons .dr-sub').textContent=T('m_lessons_sub');
   document.querySelector('#menu-games .dr-title').textContent=T('m_games');
   document.querySelector('#menu-games .dr-sub').textContent=T('m_games_sub');
   document.querySelector('#menu-review .dr-title').textContent=T('m_review');
@@ -830,8 +1088,8 @@ function setTab(id){
   document.querySelectorAll('.dr-item[id^="menu-"]').forEach(t=>t.classList.remove('on'));
   if(id){$(id)&&$(id).classList.add('on');}
 }
-function goCharts(){showScreen('s-charts');setTab('tab-charts');$('menu-charts')&&$('menu-charts').classList.add('on');setNB('いろどり 初級1 A2','Hiragana · Katakana');}
-function goLessons(){showScreen('s-lessons');setTab('tab-lessons');$('menu-lessons')&&$('menu-lessons').classList.add('on');setNB('いろどり Lessons','Starter A1 — 18 Lessons');renderLessons();}
+function goCharts(){showScreen('s-charts');setTab('tab-charts');$('menu-charts')&&$('menu-charts').classList.add('on');setNB('漢字','Kanji Words by Lesson');}
+function goLessons(){showScreen('s-lessons');setTab('tab-lessons');$('menu-lessons')&&$('menu-lessons').classList.add('on');setNB('いろどり Lessons','Elementary 1 A2 — 18 Lessons');renderLessons();}
 function goDetail(num){curLesson=num;showScreen('s-detail');setTab('tab-lessons');setNB('Lesson '+num,'Starter A1');renderDetail(num);}
 function goExercise(num,type){curLesson=num;exType=type||'phrases';showScreen('s-exercise');$('ex-back').onclick=()=>goDetail(curLesson);setNB('Practice','Lesson '+num);startExercise();}
 function goReview(){showScreen('s-review');setTab('tab-review');$('menu-review')&&$('menu-review').classList.add('on');setNB('🧠 Review','All Lessons');startReview();}
@@ -898,21 +1156,21 @@ function setChartType(t){
 }
 
 function renderChart(){
-  const rows=chartType==='h'?H_ROWS:K_ROWS;
   let html='';
-  rows.forEach(row=>{
-    if(row.label) html+=`<div style="font-size:.6rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin:.9rem 0 .35rem;padding-left:2px">${esc(row.label)}</div>`;
-    html+=`<div class="kana-row">`;
-    row.chars.forEach(item=>{
-      if(!item){html+=`<div class="kana-cell empty"></div>`;return;}
-      const parts=item.split(' ');
-      const char=parts[0], rom=parts.slice(1).join(' ');
-      html+=`<div class="kana-cell" id="kc-${esc(char)}" onclick="playKana('${esc(char).replace(/'/g,"\\'")}','${esc(char)}')" title="${esc(rom)}">
-        <div class="kana-char">${esc(char)}</div>
-        <div class="kana-rom">${esc(rom)}</div>
-      </div>`;
+  TOPICS.forEach(topic=>{
+    topic.lessons.forEach(lnum=>{
+      const L=LESSONS[lnum-1];
+      if(!L.kanji||!L.kanji.length) return;
+      html+=`<div style="font-size:.6rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin:.9rem 0 .35rem;padding-left:2px">Lesson ${lnum} — ${esc(L.en)}</div>`;
+      html+=`<div class="kana-row">`;
+      L.kanji.forEach(k=>{
+        html+=`<div class="kana-cell" style="width:auto;min-width:58px;padding:0 8px" onclick="speak('${esc(k.jp).replace(/'/g,"\\\\'")}')" title="${esc(k.en)}">
+          <div class="kana-char" style="font-size:1.15rem">${esc(k.jp)}</div>
+          <div class="kana-rom">${esc(k.r)}</div>
+        </div>`;
+      });
+      html+=`</div>`;
     });
-    html+=`</div>`;
   });
   $('chart-grid').innerHTML=html;
 }
@@ -1213,7 +1471,7 @@ function renderQ(){
     <button class="btn-next" id="nxt" onclick="exIdx++;renderQ()" disabled>${T("next")}</button>
   </div>`;
   const oc=$('opts');
-  opts.forEach(opt=>{const b=document.createElement('button');b.className='quiz-opt';b.textContent=opt;b.addEventListener('click',()=>{if(!$('nxt').disabled)return;document.querySelectorAll('.quiz-opt').forEach(x=>x.disabled=true);const ok=opt===item.a;b.classList.add(ok?'ok':'ng');if(!ok)document.querySelectorAll('.quiz-opt').forEach(x=>{if(x.textContent===item.a)x.classList.add('ok');});$('fb').textContent=ok?T('correct'):T('answer')+item.a;$('fb').className='quiz-fb '+(ok?'ok':'ng');if(ok){exScore++;XP.add(5);Streak.touch();}$('nxt').disabled=false;});oc.appendChild(b);});
+  opts.forEach(opt=>{const b=document.createElement('button');b.className='quiz-opt';b.textContent=trShort(opt);b.dataset.orig=opt;b.addEventListener('click',()=>{if(!$('nxt').disabled)return;document.querySelectorAll('.quiz-opt').forEach(x=>x.disabled=true);const ok=opt===item.a;b.classList.add(ok?'ok':'ng');if(!ok)document.querySelectorAll('.quiz-opt').forEach(x=>{if(x.dataset.orig===item.a)x.classList.add('ok');});$('fb').textContent=ok?T('correct'):T('answer')+trShort(item.a);$('fb').className='quiz-fb '+(ok?'ok':'ng');if(ok){exScore++;XP.add(5);Streak.touch();}$('nxt').disabled=false;});oc.appendChild(b);});
 }
 function showResult(){
   const pct=Math.round(exScore/exQ.length*100);
@@ -1246,7 +1504,7 @@ function renderReviewQ(){
       <div style="font-size:.9rem;color:var(--text2);margin-bottom:3px">${exScore}/${exQ.length} ${T('correct_count')}</div>
       <div style="font-size:1.8rem;font-weight:700;color:${pct>=70?'var(--green)':'var(--amber)'};margin-bottom:1rem">${pct}%</div>
       <button class="btn btn-p btn-full" onclick="startReview()" style="margin-bottom:7px">${T('new_review')}</button>
-      <button class="btn btn-s btn-full" onclick="goCharts()">${T('back_home')}</button>
+      <button class="btn btn-s btn-full" onclick="goLessons()">${T('back_home')}</button>
     </div>`;return;
   }
   const item=exQ[exIdx];
@@ -1262,7 +1520,7 @@ function renderReviewQ(){
     <button class="btn-next" id="rv-nxt" onclick="exIdx++;renderReviewQ()" disabled>${T("next")}</button>
   </div>`;
   const oc=$('rv-opts');
-  opts.forEach(opt=>{const b=document.createElement('button');b.className='quiz-opt';b.textContent=opt;b.addEventListener('click',()=>{if(!$('rv-nxt').disabled)return;document.querySelectorAll('.quiz-opt').forEach(x=>x.disabled=true);const ok=opt===item.a;b.classList.add(ok?'ok':'ng');if(!ok)document.querySelectorAll('.quiz-opt').forEach(x=>{if(x.textContent===item.a)x.classList.add('ok');});$('rv-fb').textContent=ok?T('correct'):T('answer')+item.a;$('rv-fb').className='quiz-fb '+(ok?'ok':'ng');if(ok){exScore++;XP.add(5);Streak.touch();}$('rv-nxt').disabled=false;});oc.appendChild(b);});
+  opts.forEach(opt=>{const b=document.createElement('button');b.className='quiz-opt';b.textContent=trShort(opt);b.dataset.orig=opt;b.addEventListener('click',()=>{if(!$('rv-nxt').disabled)return;document.querySelectorAll('.quiz-opt').forEach(x=>x.disabled=true);const ok=opt===item.a;b.classList.add(ok?'ok':'ng');if(!ok)document.querySelectorAll('.quiz-opt').forEach(x=>{if(x.dataset.orig===item.a)x.classList.add('ok');});$('rv-fb').textContent=ok?T('correct'):T('answer')+trShort(item.a);$('rv-fb').className='quiz-fb '+(ok?'ok':'ng');if(ok){exScore++;XP.add(5);Streak.touch();}$('rv-nxt').disabled=false;});oc.appendChild(b);});
 }
 
 
@@ -1583,7 +1841,7 @@ document.addEventListener('click', (e)=>{ if(!$('lang-menu').contains(e.target) 
 $('lang-btn').textContent = LANG==='si'?'සිං':LANG==='ta'?'த':'EN';
 document.querySelectorAll('.lang-opt').forEach(o=>o.classList.toggle('on',o.dataset.lang===LANG));
 applyLang();
-goCharts();
+goLessons();
 </script>
 </body>
 </html>

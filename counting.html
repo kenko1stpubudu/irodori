@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f0f14">
+<title>Japanese Counting — 数字</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f0f14;--surface:#16161f;--card:#1c1c28;--card2:#232333;--card3:#2a2a3e;
+  --accent:#c084fc;--accent2:#818cf8;--teal:#2dd4bf;--green:#4ade80;
+  --amber:#fbbf24;--red:#f87171;--text:#f0eeff;--text2:#a09ec0;--text3:#5e5c80;
+  --border:rgba(192,132,252,0.10);--border2:rgba(192,132,252,0.22);
+  --r8:8px;--r12:12px;--r16:16px;--r22:22px;
+  --font-jp:'Noto Sans JP',sans-serif;
+  --nav:52px;--tab:58px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;font-size:16px;-webkit-text-size-adjust:100%}
+body{min-height:100vh;overflow-x:hidden;padding-bottom:calc(var(--tab) + env(safe-area-inset-bottom,0px))}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+/* NAVBAR */
+.navbar{position:sticky;top:0;z-index:50;height:var(--nav);padding-top:env(safe-area-inset-top,0);
+  background:rgba(15,15,20,0.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-between;padding-left:1rem;padding-right:1rem}
+.nb-left{display:flex;align-items:center;gap:8px}
+.nb-title{font-size:.95rem;font-weight:700;font-family:var(--font-jp);
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nb-sub{font-size:.6rem;color:var(--text3);margin-top:1px}
+.icon-btn{width:38px;height:38px;border-radius:var(--r8);border:1px solid var(--border2);
+  background:var(--card);color:var(--text2);font-size:1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0}
+.icon-btn:hover,.icon-btn:active{border-color:var(--accent);color:var(--accent)}
+
+/* TAB BAR */
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:50;height:var(--tab);
+  padding-bottom:env(safe-area-inset-bottom,0);
+  background:rgba(15,15,20,0.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1px solid var(--border);display:flex;align-items:stretch}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;cursor:pointer;color:var(--text3);font-size:.58rem;border:none;
+  background:none;-webkit-tap-highlight-color:transparent;transition:color .18s}
+.tab-btn .ti{font-size:1.25rem;line-height:1}
+.tab-btn.on{color:var(--accent)}
+
+/* SCREENS */
+.page{padding:1rem 1rem 1.5rem;max-width:680px;margin:0 auto}
+.screen{display:none}.screen.active{display:block}
+
+/* DRAWER */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;opacity:0;pointer-events:none;transition:opacity .25s}
+.mask.on{opacity:1;pointer-events:all}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(290px,86vw);background:var(--surface);
+  border-left:1px solid var(--border2);z-index:101;transform:translateX(100%);
+  transition:transform .28s cubic-bezier(.4,0,.2,1);overflow-y:auto;padding-top:env(safe-area-inset-top,0)}
+.drawer.on{transform:translateX(0)}
+.dr-head{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border)}
+.dr-head h2{font-size:.9rem;font-weight:600}
+.dr-close{background:none;border:none;color:var(--text3);font-size:1.2rem;cursor:pointer;padding:4px}
+.dr-sec{padding:.65rem 1rem .2rem}
+.dr-sec-title{font-size:.58rem;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.4rem}
+.dr-item{display:flex;align-items:center;gap:8px;padding:.65rem .75rem;border-radius:var(--r12);
+  cursor:pointer;border:1px solid transparent;margin-bottom:3px;text-decoration:none;
+  transition:all .15s;-webkit-tap-highlight-color:transparent}
+.dr-item:hover,.dr-item:active{background:var(--card);border-color:var(--border)}
+.dr-item.on{background:var(--card);border-color:var(--accent)}
+.dr-icon{font-size:1rem;width:24px;text-align:center;flex-shrink:0}
+.dr-title{font-size:.82rem;font-weight:600;color:var(--text)}
+.dr-sub{font-size:.64rem;color:var(--text3);margin-top:1px}
+.dr-badge{font-size:.58rem;padding:2px 7px;border-radius:99px;background:rgba(192,132,252,.18);color:var(--accent);margin-left:auto}
+.dr-divider{height:1px;background:var(--border);margin:.35rem 1rem}
+.dr-topic-group{padding:.5rem 1rem .25rem}
+.dr-topic-label{font-size:.6rem;color:var(--accent2);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:.3rem;padding-left:.25rem}
+.dr-lesson-btn{display:flex;align-items:center;gap:7px;padding:.5rem .75rem;border-radius:var(--r8);
+  cursor:pointer;border:none;background:var(--card2);width:100%;margin-bottom:3px;
+  text-align:left;font-family:inherit;transition:background .15s;-webkit-tap-highlight-color:transparent}
+.dr-lesson-btn:hover,.dr-lesson-btn:active{background:var(--card3)}
+.dr-lesson-num{font-size:.6rem;color:var(--accent2);min-width:44px;font-weight:700}
+.dr-lesson-en{font-size:.78rem;color:var(--text);flex:1}
+.dr-lesson-done{color:var(--teal);font-size:.8rem}
+
+/* CHARTS screen */
+.chart-type-row{display:flex;gap:0;background:var(--card2);border-radius:var(--r12);padding:3px;margin-bottom:1.1rem}
+.chart-type-btn{flex:1;padding:8px;border-radius:var(--r8);border:none;background:transparent;
+  color:var(--text2);font-size:.85rem;cursor:pointer;font-family:var(--font-jp);
+  transition:all .2s;-webkit-tap-highlight-color:transparent;font-weight:500}
+.chart-type-btn.on{background:var(--accent);color:#fff;font-weight:700}
+.chart-hint{font-size:.72rem;color:var(--text3);text-align:center;margin-bottom:.9rem}
+
+/* Kana grid */
+.kana-section{margin-bottom:1.25rem}
+.kana-row-label{font-size:.6rem;color:var(--text3);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:.4rem;padding-left:2px}
+.kana-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px}
+.kana-cell{width:58px;height:64px;background:var(--card);border:1px solid var(--border);border-radius:var(--r8);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;flex-shrink:0;
+  position:relative;overflow:hidden}
+.kana-cell:hover,.kana-cell:active{border-color:var(--accent2);background:var(--card2)}
+.kana-cell.playing{border-color:var(--accent);background:rgba(192,132,252,.12)}
+.kana-char{font-size:1.55rem;font-family:var(--font-jp);color:var(--text);line-height:1}
+.kana-rom{font-size:.62rem;color:var(--text3);font-weight:500}
+.kana-cell.empty{background:transparent;border-color:transparent;cursor:default}
+.kana-cell.empty:hover{background:transparent;border-color:transparent}
+/* ripple on tap */
+.kana-cell::after{content:'';position:absolute;inset:0;background:var(--accent);opacity:0;border-radius:inherit;transition:opacity .3s}
+.kana-cell.playing::after{opacity:.08}
+
+/* LESSONS screen */
+.book-banner{background:linear-gradient(135deg,rgba(192,132,252,.1),rgba(129,140,248,.06));
+  border:1px solid var(--border2);border-radius:var(--r22);padding:1rem 1.1rem;
+  margin-bottom:1rem;display:flex;align-items:center;gap:12px}
+.book-cover{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#ec4899,#c084fc);
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.book-info h2{font-size:.9rem;font-weight:700}
+.book-info p{font-size:.68rem;color:var(--text3);margin-top:2px}
+.prog-wrap{display:flex;align-items:center;gap:8px;margin-bottom:.9rem}
+.prog-track{flex:1;height:5px;background:var(--card2);border-radius:99px;overflow:hidden}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:99px;transition:width .5s}
+.prog-lbl{font-size:.7rem;color:var(--text3);min-width:28px;text-align:right}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--r12);padding:.7rem;text-align:center}
+.stat-n{font-size:1.4rem;font-weight:700}.stat-l{font-size:.6rem;color:var(--text3);margin-top:2px}
+.sec-label{font-size:.6rem;font-weight:700;color:var(--accent2);letter-spacing:.07em;text-transform:uppercase;
+  padding:.8rem 0 .3rem;display:flex;align-items:center;gap:6px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.lcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r16);
+  padding:.85rem 1rem;margin-bottom:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:border-color .15s,transform .12s;display:flex;align-items:flex-start;gap:10px}
+.lcard:active{transform:scale(.988)}.lcard:hover{border-color:var(--border2)}.lcard.done{border-color:var(--teal)}
+.lc-badge{font-size:.6rem;font-weight:700;color:var(--accent2);background:rgba(129,140,248,.12);
+  padding:3px 8px;border-radius:6px;flex-shrink:0;margin-top:2px;white-space:nowrap}
+.lc-body{flex:1;min-width:0}
+.lc-en{font-size:.88rem;font-weight:600;color:var(--text)}
+.lc-jp{font-size:.78rem;font-family:var(--font-jp);color:var(--text2);margin-top:2px}
+.lc-pills{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+.lc-pill{font-size:.62rem;color:var(--text3);background:var(--card2);border-radius:99px;padding:2px 7px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.lc-check{color:var(--teal);font-size:.85rem;flex-shrink:0}
+
+/* DETAIL screen */
+.dcard{background:var(--card);border:1px solid var(--border2);border-radius:var(--r22);padding:1.1rem;margin-bottom:.9rem}
+.d-topic{font-size:.6rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.d-num{font-size:.65rem;color:var(--text3);margin-bottom:3px}
+.d-title{font-size:1.1rem;font-weight:700;margin-bottom:2px}
+.d-jp{font-size:.92rem;font-family:var(--font-jp);color:var(--text2);margin-bottom:.9rem}
+.d-sec{margin-bottom:1.1rem}
+.d-hdr{font-size:.64rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;
+  margin-bottom:.5rem;display:flex;align-items:center;gap:6px}
+.d-hdr::after{content:'';flex:1;height:1px;background:var(--border)}
+.cando-item{display:flex;gap:7px;align-items:flex-start;padding:.5rem .7rem;
+  background:rgba(192,132,252,.05);border-radius:var(--r8);margin-bottom:4px;border-left:2px solid var(--accent2)}
+.cando-txt{font-size:.78rem;color:var(--text2);line-height:1.45}
+.phrase-row{display:flex;align-items:center;gap:8px;padding:.55rem .7rem;
+  border-radius:var(--r8);background:var(--card2);margin-bottom:4px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;transition:background .15s}
+.phrase-row:hover,.phrase-row:active{background:var(--card3)}
+.ph-jp{font-size:.95rem;font-family:var(--font-jp);color:var(--text);flex-shrink:0;min-width:0}
+.ph-right{flex:1;min-width:0;padding-left:4px}
+.ph-r{font-size:.68rem;color:var(--text3)}
+.ph-en{font-size:.74rem;color:var(--text2);margin-top:1px}
+.ph-play{color:var(--accent2);font-size:.85rem;flex-shrink:0}
+.kanji-grid{display:flex;flex-wrap:wrap;gap:5px}
+.kchip{background:var(--card2);border:1px solid var(--border);border-radius:var(--r8);
+  padding:5px 9px;text-align:center;cursor:pointer;min-width:50px;
+  transition:border-color .15s;-webkit-tap-highlight-color:transparent}
+.kchip:hover,.kchip:active{border-color:var(--accent2)}
+.kc-jp{font-size:1rem;font-family:var(--font-jp);color:var(--text)}
+.kc-r{font-size:.58rem;color:var(--text3);margin-top:2px}.kc-en{font-size:.58rem;color:var(--teal);margin-top:1px}
+.gram-item{padding:.6rem .75rem;background:var(--card2);border-radius:var(--r8);margin-bottom:5px}
+.gi-pat{font-size:.82rem;font-weight:600;color:var(--accent);font-family:var(--font-jp);margin-bottom:2px}
+.gi-ex{font-size:.77rem;color:var(--text2);font-family:var(--font-jp)}.gi-m{font-size:.7rem;color:var(--text3);margin-top:2px}
+.act-row{display:flex;align-items:center;gap:7px;padding:.5rem .75rem;background:var(--card2);border-radius:var(--r8);margin-bottom:4px}
+.act-icon{font-size:.95rem;flex-shrink:0}.act-txt{font-size:.78rem;color:var(--text2);font-family:var(--font-jp);flex:1}
+.act-en{font-size:.64rem;color:var(--text3)}
+.act-play{width:28px;height:28px;border-radius:50%;border:1px solid var(--border2);
+  background:var(--card);color:var(--accent2);font-size:.7rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.act-play:hover,.act-play:active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.tips-box{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.18);border-radius:var(--r12);padding:.7rem .9rem}
+.tips-tag{display:inline-block;font-size:.65rem;background:rgba(251,191,36,.12);color:var(--amber);border-radius:99px;padding:3px 8px;margin:2px 3px 2px 0}
+
+/* QUIZ */
+.quiz-card{background:var(--card);border:1px solid var(--border2);border-radius:var(--r22);padding:1.25rem 1rem;text-align:center}
+.quiz-char{font-size:3.8rem;font-family:var(--font-jp);color:var(--text);line-height:1.2;margin:.5rem 0;cursor:pointer}
+.quiz-txt{font-size:.85rem;color:var(--text2);margin-bottom:.9rem}
+.quiz-score{font-size:.72rem;color:var(--text3);margin-bottom:.5rem}
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:.7rem}
+.quiz-opt{padding:11px 7px;border:1px solid var(--border2);border-radius:var(--r12);
+  background:var(--card2);color:var(--text);font-size:.82rem;cursor:pointer;
+  font-family:inherit;transition:all .18s;line-height:1.3;-webkit-tap-highlight-color:transparent}
+.quiz-opt:hover:not(:disabled){border-color:var(--accent2);color:var(--accent2)}
+.quiz-opt.ok{background:rgba(74,222,128,.12);border-color:var(--green);color:var(--green)}
+.quiz-opt.ng{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}
+.quiz-fb{font-size:.85rem;font-weight:600;min-height:20px;margin:.4rem 0}
+.quiz-fb.ok{color:var(--green)}.quiz-fb.ng{color:var(--red)}
+.ex-type-row{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-bottom:.9rem}
+.ex-t-btn{padding:5px 13px;border-radius:99px;border:1px solid var(--border2);
+  background:var(--card2);color:var(--text2);font-size:.75rem;cursor:pointer;transition:all .18s;font-family:inherit}
+.ex-t-btn.on{background:var(--accent2);border-color:var(--accent2);color:#fff;font-weight:600}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:10px 16px;
+  border-radius:var(--r12);font-size:.85rem;font-weight:600;cursor:pointer;border:none;
+  transition:opacity .18s,transform .12s;-webkit-tap-highlight-color:transparent;font-family:inherit}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--accent);color:#fff}.btn-p:hover{opacity:.88}
+.btn-s{background:var(--card2);color:var(--text2);border:1px solid var(--border2)}
+.btn-s:hover{border-color:var(--accent);color:var(--accent)}
+.btn-t{background:rgba(45,212,191,.13);border:1px solid var(--teal);color:var(--teal)}
+.btn-t:hover{background:rgba(45,212,191,.22)}
+.btn-full{width:100%}
+.btn-next{width:100%;padding:11px;background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:#fff;border:none;border-radius:var(--r12);font-size:.88rem;font-weight:600;
+  cursor:pointer;margin-top:.5rem;transition:opacity .18s;font-family:inherit}
+.btn-next:disabled{opacity:.25;cursor:default}.btn-next:hover:not(:disabled){opacity:.88}
+.btn-back{display:inline-flex;align-items:center;gap:4px;background:none;border:none;
+  color:var(--text3);font-size:.8rem;cursor:pointer;margin-bottom:.7rem;
+  font-family:inherit;transition:color .18s;-webkit-tap-highlight-color:transparent}
+.btn-back:hover{color:var(--text)}
+
+/* ═══ LANGUAGE SWITCHER ═══ */
+.lang-btn{min-width:38px;height:38px;padding:0 8px;border-radius:var(--r8);border:1px solid var(--border2);
+  background:var(--card);color:var(--text2);font-size:.72rem;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0;font-family:inherit}
+.lang-btn:hover,.lang-btn:active{border-color:var(--accent);color:var(--accent)}
+.lang-menu{position:fixed;top:calc(var(--nav) + 6px);right:1rem;z-index:150;
+  background:var(--surface);border:1px solid var(--border2);border-radius:var(--r12);
+  padding:5px;min-width:150px;box-shadow:0 8px 30px rgba(0,0,0,.5);
+  opacity:0;pointer-events:none;transform:translateY(-8px);transition:all .2s}
+.lang-menu.on{opacity:1;pointer-events:all;transform:translateY(0)}
+.lang-opt{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r8);
+  cursor:pointer;font-size:.82rem;color:var(--text2);transition:background .15s;
+  -webkit-tap-highlight-color:transparent}
+.lang-opt:hover{background:var(--card)}
+.lang-opt.on{background:var(--card);color:var(--accent);font-weight:700}
+.lang-flag{font-size:1rem}
+
+
+/* ═══ GAME + XP/STREAK ═══ */
+.xp-bar{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border2);
+  border-radius:var(--r16);padding:.6rem .9rem;margin-bottom:1rem}
+.xp-streak{display:flex;align-items:center;gap:4px;font-size:.9rem;font-weight:700;color:var(--amber)}
+.xp-level{display:flex;align-items:center;gap:5px;flex:1}
+.xp-level-badge{font-size:.62rem;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--accent2),var(--accent));
+  padding:3px 9px;border-radius:99px;white-space:nowrap}
+.xp-track{flex:1;height:6px;background:var(--card2);border-radius:99px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--amber),#fb923c);border-radius:99px;transition:width .6s}
+.xp-pts{font-size:.65rem;color:var(--text3);white-space:nowrap}
+
+/* Game menu cards */
+.game-menu{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.game-card{background:var(--card);border:1px solid var(--border2);border-radius:var(--r16);
+  padding:1.1rem .9rem;text-align:center;cursor:pointer;transition:all .18s;
+  -webkit-tap-highlight-color:transparent}
+.game-card:active{transform:scale(.96)}
+.game-card:hover{border-color:var(--accent)}
+.gc-icon{font-size:2rem;margin-bottom:.4rem}
+.gc-title{font-size:.85rem;font-weight:700;color:var(--text)}
+.gc-sub{font-size:.65rem;color:var(--text3);margin-top:2px}
+
+/* Matching game board */
+.match-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem}
+.match-tile{aspect-ratio:1;background:var(--card2);border:2px solid var(--border2);border-radius:var(--r12);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:1.5rem;font-family:var(--font-jp);color:transparent;
+  transition:all .25s;-webkit-tap-highlight-color:transparent;
+  position:relative;user-select:none}
+.match-tile .tile-back{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;color:var(--text3);opacity:1;transition:opacity .2s}
+.match-tile.flipped{color:var(--text);background:var(--card3);border-color:var(--accent2)}
+.match-tile.flipped .tile-back{opacity:0}
+.match-tile.matched{color:var(--green);background:rgba(74,222,128,.1);border-color:var(--green);cursor:default}
+.match-tile.matched .tile-back{opacity:0}
+.match-tile.rom{font-size:.95rem;font-family:inherit;font-weight:700}
+.match-stats{display:flex;justify-content:space-between;font-size:.75rem;color:var(--text3);margin-bottom:.75rem;padding:0 2px}
+
+/* Sound quiz */
+.sound-play-big{width:90px;height:90px;border-radius:50%;border:2px solid var(--accent2);
+  background:rgba(129,140,248,.1);color:var(--accent2);font-size:2rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;margin:1rem auto;
+  transition:all .2s;-webkit-tap-highlight-color:transparent}
+.sound-play-big:active{transform:scale(.93)}
+.sound-play-big:hover{background:rgba(129,140,248,.2)}
+.sound-opts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:.75rem}
+.sound-opt{padding:14px;border:1px solid var(--border2);border-radius:var(--r12);
+  background:var(--card2);color:var(--text);font-size:1.6rem;font-family:var(--font-jp);
+  cursor:pointer;transition:all .18s;-webkit-tap-highlight-color:transparent}
+.sound-opt:hover:not(:disabled){border-color:var(--accent2)}
+.sound-opt.ok{background:rgba(74,222,128,.12);border-color:var(--green);color:var(--green)}
+.sound-opt.ng{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}
+
+/* Badges */
+.badge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
+.badge-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r12);
+  padding:.8rem .5rem;text-align:center;transition:all .2s}
+.badge-item.earned{border-color:var(--amber);background:rgba(251,191,36,.05)}
+.badge-item.locked{opacity:.35;filter:grayscale(1)}
+.badge-icon{font-size:1.6rem;margin-bottom:.25rem}
+.badge-name{font-size:.6rem;font-weight:700;color:var(--text2)}
+
+/* XP toast */
+.xp-toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-20px);
+  background:linear-gradient(135deg,var(--amber),#fb923c);color:#1a1a1a;
+  font-size:.85rem;font-weight:700;padding:8px 18px;border-radius:99px;
+  z-index:200;opacity:0;pointer-events:none;transition:all .35s;box-shadow:0 4px 20px rgba(251,191,36,.4)}
+.xp-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+
+/* counting-specific */
+.count-section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r16);
+  padding:1rem 1.1rem;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:12px;
+  transition:all .18s;-webkit-tap-highlight-color:transparent}
+.count-section-card:active{transform:scale(.98)}
+.count-section-card:hover{border-color:var(--accent)}
+.csc-icon{font-size:1.8rem;flex-shrink:0}
+.csc-title{font-size:.9rem;font-weight:700;color:var(--text)}
+.csc-sub{font-size:.68rem;color:var(--text3);margin-top:2px}
+.num-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:7px;margin-bottom:1rem}
+.num-cell{background:var(--card);border:1px solid var(--border);border-radius:var(--r12);
+  padding:.7rem .4rem;text-align:center;cursor:pointer;transition:all .15s;
+  -webkit-tap-highlight-color:transparent}
+.num-cell:hover,.num-cell:active{border-color:var(--accent2);background:var(--card2)}
+.nc-num{font-size:1.3rem;font-weight:700;color:var(--accent)}
+.nc-jp{font-size:1.05rem;font-family:var(--font-jp);color:var(--text);margin-top:2px}
+.nc-r{font-size:.62rem;color:var(--text3);margin-top:2px}
+.nc-note{font-size:.58rem;color:var(--amber);margin-top:2px}
+.counter-table{width:100%;border-collapse:collapse;margin-bottom:1rem}
+.counter-table td{padding:.5rem .4rem;border-bottom:1px solid var(--border);font-size:.8rem}
+.info-box{background:rgba(129,140,248,.07);border:1px solid var(--border2);border-radius:var(--r12);
+  padding:.8rem 1rem;margin-bottom:1rem;font-size:.78rem;color:var(--text2);line-height:1.6}
+.info-box b{color:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="mask" id="mask"></div>
+<div class="drawer" id="drawer">
+  <div class="dr-head"><h2>🔢 Counting Menu</h2><button class="dr-close" id="dr-close">✕</button></div>
+  <div class="dr-sec">
+    <div class="dr-sec-title">Sections</div>
+    <div id="drawer-sections"></div>
+  </div>
+  <div class="dr-divider"></div>
+  <div class="dr-sec">
+    <div class="dr-sec-title">Books</div>
+    <a class="dr-item" href="index.html" style="color:inherit">
+      <span class="dr-icon">🌸</span>
+      <div><div class="dr-title">Starter A1 — 入門</div><div class="dr-sub">Book 1</div></div>
+    </a>
+    <a class="dr-item" href="elementary1.html" style="color:inherit">
+      <span class="dr-icon">🌿</span>
+      <div><div class="dr-title">Elementary 1 A2 — 初級1</div><div class="dr-sub">Book 2</div></div>
+    </a>
+  </div>
+</div>
+
+<nav class="navbar">
+  <div class="nb-left">
+    <a class="icon-btn" href="index.html" title="Home" style="text-decoration:none">🏠</a>
+    <div>
+      <div class="nb-title">🔢 数字 Counting</div>
+      <div class="nb-sub">Japanese Numbers</div>
+    </div>
+  </div>
+  <button class="icon-btn" id="menu-btn">☰</button>
+</nav>
+
+<div class="screen active" id="s-home"><div class="page" id="home-content"></div></div>
+<div class="screen" id="s-section"><div class="page">
+  <button class="btn-back" onclick="goHome()">← Counting Home</button>
+  <div id="section-content"></div>
+</div></div>
+<div class="screen" id="s-quiz"><div class="page">
+  <button class="btn-back" onclick="goHome()">← Counting Home</button>
+  <div id="quiz-content"></div>
+</div></div>
+
+<nav class="tabbar">
+  <button class="tab-btn on" id="tab-home" onclick="goHome()"><span class="ti">🔢</span>Counting</button>
+  <button class="tab-btn" id="tab-quiz" onclick="goQuiz()"><span class="ti">🧠</span>Quiz</button>
+  <a class="tab-btn" href="index.html" style="text-decoration:none"><span class="ti">🌸</span>A1 Book</a>
+  <a class="tab-btn" href="elementary1.html" style="text-decoration:none"><span class="ti">🌿</span>A2 Book</a>
+</nav>
+
+<script>
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function shuf(a){return[...a].sort(()=>Math.random()-0.5);}
+
+let ttsV=[];
+if(window.speechSynthesis){
+  const lv=()=>{ttsV=speechSynthesis.getVoices().filter(v=>v.lang.startsWith('ja'));};
+  lv(); speechSynthesis.addEventListener('voiceschanged',lv);
+}
+function speak(txt,rate){
+  if(!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(String(txt));
+  u.lang='ja-JP';u.rate=rate||0.8;
+  if(ttsV.length)u.voice=ttsV[0];
+  speechSynthesis.speak(u);
+}
+
+// ═══════════════════════════════════
+// COUNTING DATA
+// ═══════════════════════════════════
+const SECTIONS=[
+{id:'basic',icon:'1️⃣',title:'Numbers 1–10',sub:'මූලික අංක · basic numbers',
+ intro:'ජපන් අංක 1-10. මේවා හොඳට මතක තියාගන්න — අනිත් හැම ගණනකටම මේවා පාවිච්චි වෙනවා! ⚠ 4 සහ 7 ට කියවීම් 2ක් තියෙනවා.',
+ items:[
+  {n:'1',jp:'一',kana:'いち',r:'ichi'},
+  {n:'2',jp:'二',kana:'に',r:'ni'},
+  {n:'3',jp:'三',kana:'さん',r:'san'},
+  {n:'4',jp:'四',kana:'よん / し',r:'yon / shi',note:'usually よん'},
+  {n:'5',jp:'五',kana:'ご',r:'go'},
+  {n:'6',jp:'六',kana:'ろく',r:'roku'},
+  {n:'7',jp:'七',kana:'なな / しち',r:'nana / shichi',note:'usually なな'},
+  {n:'8',jp:'八',kana:'はち',r:'hachi'},
+  {n:'9',jp:'九',kana:'きゅう / く',r:'kyuu / ku',note:'usually きゅう'},
+  {n:'10',jp:'十',kana:'じゅう',r:'juu'},
+ ]},
+{id:'tens',icon:'🔟',title:'Numbers 11–99',sub:'දහයෙන් උඩ · combining tens',
+ intro:'11-99 හදන්නේ ලේසියි: <b>10 + අංකය</b>. 11 = じゅういち (10+1). 20 = にじゅう (2×10). 21 = にじゅういち (2×10+1). Pattern එක තේරුණාම ඕනෑම අංකයක් කියන්න පුළුවන්!',
+ items:[
+  {n:'11',jp:'十一',kana:'じゅういち',r:'juu-ichi'},
+  {n:'12',jp:'十二',kana:'じゅうに',r:'juu-ni'},
+  {n:'15',jp:'十五',kana:'じゅうご',r:'juu-go'},
+  {n:'20',jp:'二十',kana:'にじゅう',r:'ni-juu'},
+  {n:'21',jp:'二十一',kana:'にじゅういち',r:'ni-juu-ichi'},
+  {n:'30',jp:'三十',kana:'さんじゅう',r:'san-juu'},
+  {n:'40',jp:'四十',kana:'よんじゅう',r:'yon-juu'},
+  {n:'50',jp:'五十',kana:'ごじゅう',r:'go-juu'},
+  {n:'60',jp:'六十',kana:'ろくじゅう',r:'roku-juu'},
+  {n:'70',jp:'七十',kana:'ななじゅう',r:'nana-juu'},
+  {n:'80',jp:'八十',kana:'はちじゅう',r:'hachi-juu'},
+  {n:'90',jp:'九十',kana:'きゅうじゅう',r:'kyuu-juu'},
+  {n:'99',jp:'九十九',kana:'きゅうじゅうきゅう',r:'kyuu-juu-kyuu'},
+ ]},
+{id:'big',icon:'💯',title:'100 · 1,000 · 10,000',sub:'ලොකු අංක · big numbers',
+ intro:'⚠ <b>විශේෂ ශබ්ද වෙනස්කම්</b> මතක තියාගන්න: 300=さんびゃく, 600=ろっぴゃく, 800=はっぴゃく · 3000=さんぜん, 8000=はっせん. ජපන් භාෂාවේ 10,000 (万 man) වෙනම ඒකකයක් — 20,000 = 2万 (にまん)!',
+ items:[
+  {n:'100',jp:'百',kana:'ひゃく',r:'hyaku'},
+  {n:'200',jp:'二百',kana:'にひゃく',r:'ni-hyaku'},
+  {n:'300',jp:'三百',kana:'さんびゃく',r:'san-byaku',note:'⚠ byaku'},
+  {n:'400',jp:'四百',kana:'よんひゃく',r:'yon-hyaku'},
+  {n:'600',jp:'六百',kana:'ろっぴゃく',r:'roppyaku',note:'⚠ ppyaku'},
+  {n:'800',jp:'八百',kana:'はっぴゃく',r:'happyaku',note:'⚠ ppyaku'},
+  {n:'1,000',jp:'千',kana:'せん',r:'sen'},
+  {n:'3,000',jp:'三千',kana:'さんぜん',r:'san-zen',note:'⚠ zen'},
+  {n:'8,000',jp:'八千',kana:'はっせん',r:'hassen',note:'⚠ ssen'},
+  {n:'10,000',jp:'一万',kana:'いちまん',r:'ichi-man'},
+  {n:'50,000',jp:'五万',kana:'ごまん',r:'go-man'},
+  {n:'100,000',jp:'十万',kana:'じゅうまん',r:'juu-man'},
+ ]},
+{id:'tsu',icon:'🍎',title:'Things — 〜つ',sub:'දේවල් ගණන් කිරීම · general counter',
+ intro:'ජපන් භාෂාවේ දේවල් ගණන් කරද්දි <b>විශේෂ වචන (counters)</b> ඕනෑ. 〜つ = ඕනෑම දෙයකට general counter (1-10 විතරයි). ⚠ මේවා සම්පූර්ණයෙන්ම irregular — කටපාඩම් කරන්න ඕනෑ!',
+ items:[
+  {n:'1 thing',jp:'一つ',kana:'ひとつ',r:'hitotsu'},
+  {n:'2 things',jp:'二つ',kana:'ふたつ',r:'futatsu'},
+  {n:'3 things',jp:'三つ',kana:'みっつ',r:'mittsu'},
+  {n:'4 things',jp:'四つ',kana:'よっつ',r:'yottsu'},
+  {n:'5 things',jp:'五つ',kana:'いつつ',r:'itsutsu'},
+  {n:'6 things',jp:'六つ',kana:'むっつ',r:'muttsu'},
+  {n:'7 things',jp:'七つ',kana:'ななつ',r:'nanatsu'},
+  {n:'8 things',jp:'八つ',kana:'やっつ',r:'yattsu'},
+  {n:'9 things',jp:'九つ',kana:'ここのつ',r:'kokonotsu'},
+  {n:'10 things',jp:'十',kana:'とお',r:'too',note:'no つ!'},
+ ]},
+{id:'people',icon:'🧑‍🤝‍🧑',title:'People — 〜人',sub:'මිනිසුන් ගණන් කිරීම · counting people',
+ intro:'⚠ 1 සහ 2 <b>සම්පූර්ණයෙන්ම වෙනස්</b>: ひとり, ふたり. 3න් පස්සේ regular: අංකය + にん.',
+ items:[
+  {n:'1 person',jp:'一人',kana:'ひとり',r:'hitori',note:'⚠ special'},
+  {n:'2 people',jp:'二人',kana:'ふたり',r:'futari',note:'⚠ special'},
+  {n:'3 people',jp:'三人',kana:'さんにん',r:'san-nin'},
+  {n:'4 people',jp:'四人',kana:'よにん',r:'yo-nin',note:'⚠ yo (not yon)'},
+  {n:'5 people',jp:'五人',kana:'ごにん',r:'go-nin'},
+  {n:'6 people',jp:'六人',kana:'ろくにん',r:'roku-nin'},
+  {n:'7 people',jp:'七人',kana:'ななにん',r:'nana-nin'},
+  {n:'8 people',jp:'八人',kana:'はちにん',r:'hachi-nin'},
+  {n:'9 people',jp:'九人',kana:'きゅうにん',r:'kyuu-nin'},
+  {n:'10 people',jp:'十人',kana:'じゅうにん',r:'juu-nin'},
+ ]},
+{id:'counters',icon:'📏',title:'Common Counters',sub:'枚 · 本 · 匹 · 台 · 冊 · 回',
+ intro:'ජපන් counters වර්ග 350ක්+ තියෙනවා, ඒත් මේ 6 දැනගත්තම 90%ක් වැඩ! <b>枚</b>=පැතලි දේවල් (කඩදාසි, tickets) · <b>本</b>=දිග දේවල් (පෑන්, බෝතල්) · <b>匹</b>=කුඩා සතුන් · <b>台</b>=යන්ත්‍ර/වාහන · <b>冊</b>=පොත් · <b>回</b>=වතාවන්',
+ items:[
+  {n:'1 flat (paper)',jp:'一枚',kana:'いちまい',r:'ichi-mai'},
+  {n:'3 flat',jp:'三枚',kana:'さんまい',r:'san-mai'},
+  {n:'1 long (pen)',jp:'一本',kana:'いっぽん',r:'ippon',note:'⚠ ppon'},
+  {n:'3 long',jp:'三本',kana:'さんぼん',r:'san-bon',note:'⚠ bon'},
+  {n:'6 long',jp:'六本',kana:'ろっぽん',r:'roppon',note:'⚠ ppon'},
+  {n:'1 animal',jp:'一匹',kana:'いっぴき',r:'ippiki',note:'⚠ ppiki'},
+  {n:'3 animals',jp:'三匹',kana:'さんびき',r:'san-biki',note:'⚠ biki'},
+  {n:'1 machine/car',jp:'一台',kana:'いちだい',r:'ichi-dai'},
+  {n:'1 book',jp:'一冊',kana:'いっさつ',r:'issatsu',note:'⚠ ssatsu'},
+  {n:'1 time',jp:'一回',kana:'いっかい',r:'ikkai',note:'⚠ kkai'},
+  {n:'2 times',jp:'二回',kana:'にかい',r:'ni-kai'},
+  {n:'3 times',jp:'三回',kana:'さんかい',r:'san-kai'},
+ ]},
+{id:'days',icon:'📅',title:'Days of Month',sub:'මාසයේ දින · ⚠ 1-10 special',
+ intro:'⚠ මාසයේ <b>1-10 දින සම්පූර්ණයෙන්ම special</b> — ついたち, ふつか... 11න් පස්සේ regular (にち). 14, 20, 24 ත් special!',
+ items:[
+  {n:'1st',jp:'一日',kana:'ついたち',r:'tsuitachi',note:'⚠ special'},
+  {n:'2nd',jp:'二日',kana:'ふつか',r:'futsuka'},
+  {n:'3rd',jp:'三日',kana:'みっか',r:'mikka'},
+  {n:'4th',jp:'四日',kana:'よっか',r:'yokka'},
+  {n:'5th',jp:'五日',kana:'いつか',r:'itsuka'},
+  {n:'6th',jp:'六日',kana:'むいか',r:'muika'},
+  {n:'7th',jp:'七日',kana:'なのか',r:'nanoka'},
+  {n:'8th',jp:'八日',kana:'ようか',r:'youka'},
+  {n:'9th',jp:'九日',kana:'ここのか',r:'kokonoka'},
+  {n:'10th',jp:'十日',kana:'とおか',r:'tooka'},
+  {n:'11th',jp:'十一日',kana:'じゅういちにち',r:'juu-ichi-nichi',note:'regular ✓'},
+  {n:'14th',jp:'十四日',kana:'じゅうよっか',r:'juu-yokka',note:'⚠ special'},
+  {n:'20th',jp:'二十日',kana:'はつか',r:'hatsuka',note:'⚠ special'},
+  {n:'24th',jp:'二十四日',kana:'にじゅうよっか',r:'ni-juu-yokka',note:'⚠ special'},
+ ]},
+{id:'months',icon:'🗓️',title:'Months & Time',sub:'මාස · පැය · මිනිත්තු',
+ intro:'මාස ලේසියි: <b>අංකය + 月 (がつ)</b>. පැය: අංකය + 時 (じ). ⚠ 4月=しがつ, 7月=しちがつ, 9月=くがつ · 4時=よじ, 9時=くじ.',
+ items:[
+  {n:'January',jp:'一月',kana:'いちがつ',r:'ichi-gatsu'},
+  {n:'February',jp:'二月',kana:'にがつ',r:'ni-gatsu'},
+  {n:'April',jp:'四月',kana:'しがつ',r:'shi-gatsu',note:'⚠ shi'},
+  {n:'July',jp:'七月',kana:'しちがつ',r:'shichi-gatsu',note:'⚠ shichi'},
+  {n:'September',jp:'九月',kana:'くがつ',r:'ku-gatsu',note:'⚠ ku'},
+  {n:'December',jp:'十二月',kana:'じゅうにがつ',r:'juu-ni-gatsu'},
+  {n:'1 oclock',jp:'一時',kana:'いちじ',r:'ichi-ji'},
+  {n:'4 oclock',jp:'四時',kana:'よじ',r:'yo-ji',note:'⚠ yo'},
+  {n:'9 oclock',jp:'九時',kana:'くじ',r:'ku-ji',note:'⚠ ku'},
+  {n:'30 min',jp:'三十分',kana:'さんじゅっぷん',r:'san-juppun',note:'⚠ ppun'},
+  {n:'Half past',jp:'半',kana:'はん',r:'han'},
+ ]},
+{id:'age',icon:'🎂',title:'Age & Money',sub:'වයස · මුදල්',
+ intro:'වයස: අංකය + 歳 (さい). ⚠ <b>20 වයස = はたち</b> (special!). මුදල්: අංකය + 円 (えん).',
+ items:[
+  {n:'1 year old',jp:'一歳',kana:'いっさい',r:'issai',note:'⚠ ssai'},
+  {n:'8 years old',jp:'八歳',kana:'はっさい',r:'hassai',note:'⚠ ssai'},
+  {n:'10 years old',jp:'十歳',kana:'じゅっさい',r:'jussai',note:'⚠ ssai'},
+  {n:'20 years old',jp:'二十歳',kana:'はたち',r:'hatachi',note:'⚠ SPECIAL!'},
+  {n:'25 years old',jp:'二十五歳',kana:'にじゅうごさい',r:'ni-juu-go-sai'},
+  {n:'100 yen',jp:'百円',kana:'ひゃくえん',r:'hyaku-en'},
+  {n:'500 yen',jp:'五百円',kana:'ごひゃくえん',r:'go-hyaku-en'},
+  {n:'1,000 yen',jp:'千円',kana:'せんえん',r:'sen-en'},
+  {n:'10,000 yen',jp:'一万円',kana:'いちまんえん',r:'ichi-man-en'},
+ ]},
+];
+
+// ═══════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function setTab(id){
+  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('on'));
+  if(id)$(id)&&$(id).classList.add('on');
+}
+function goHome(){showScreen('s-home');setTab('tab-home');renderHome();}
+function goSection(id){showScreen('s-section');setTab('tab-home');renderSection(id);}
+function goQuiz(){showScreen('s-quiz');setTab('tab-quiz');startQuiz();}
+function openDrawer(){$('drawer').classList.add('on');$('mask').classList.add('on');}
+function closeDrawer(){$('drawer').classList.remove('on');$('mask').classList.remove('on');}
+
+// ═══════════════════════════════════
+// HOME
+// ═══════════════════════════════════
+function renderHome(){
+  $('home-content').innerHTML=`
+    <div class="book-banner">
+      <div class="book-cover" style="background:linear-gradient(135deg,#818cf8,#c084fc)">🔢</div>
+      <div class="book-info">
+        <h2>数字 — Japanese Counting</h2>
+        <p>අංක · counters · දින · වයස — tap to hear 🔊</p>
+      </div>
+    </div>
+    ${SECTIONS.map(s=>`
+      <div class="count-section-card" onclick="goSection('${s.id}')">
+        <div class="csc-icon">${s.icon}</div>
+        <div style="flex:1">
+          <div class="csc-title">${esc(s.title)}</div>
+          <div class="csc-sub">${esc(s.sub)}</div>
+        </div>
+        <span style="color:var(--text3)">›</span>
+      </div>`).join('')}`;
+}
+
+function renderSection(id){
+  const s=SECTIONS.find(x=>x.id===id);
+  $('section-content').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:.75rem">
+      <span style="font-size:1.8rem">${s.icon}</span>
+      <div>
+        <div style="font-size:1.1rem;font-weight:700">${esc(s.title)}</div>
+        <div style="font-size:.7rem;color:var(--text3)">${esc(s.sub)}</div>
+      </div>
+    </div>
+    <div class="info-box">${s.intro}</div>
+    <div class="num-grid">
+      ${s.items.map(it=>`
+        <div class="num-cell" onclick="speak('${it.kana.split(' / ')[0].replace(/'/g,"\\'")}')">
+          <div class="nc-num">${esc(it.n)}</div>
+          <div class="nc-jp">${esc(it.jp)}</div>
+          <div class="nc-r">${esc(it.kana)}</div>
+          <div class="nc-r">${esc(it.r)}</div>
+          ${it.note?`<div class="nc-note">${esc(it.note)}</div>`:''}
+        </div>`).join('')}
+    </div>
+    <button class="btn btn-p btn-full" onclick="startSectionQuiz('${s.id}')">🧠 Quiz — ${esc(s.title)}</button>`;
+}
+
+// ═══════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════
+let qPool=[],qIdx=0,qScore=0,qSecId=null;
+function startQuiz(){qSecId=null;buildQuiz(SECTIONS.flatMap(s=>s.items));}
+function startSectionQuiz(id){qSecId=id;showScreen('s-quiz');setTab('tab-quiz');buildQuiz(SECTIONS.find(s=>s.id===id).items);}
+function buildQuiz(items){
+  qPool=shuf(items).slice(0,10);qIdx=0;qScore=0;renderQuizQ();
+}
+function renderQuizQ(){
+  if(qIdx>=qPool.length){
+    const pct=Math.round(qScore/qPool.length*100);
+    $('quiz-content').innerHTML=`<div class="quiz-card" style="text-align:center">
+      <div style="font-size:3rem;margin:.5rem 0">${pct>=80?'🎉':pct>=60?'💪':'📚'}</div>
+      <div style="font-size:1.1rem;font-weight:700;margin-bottom:5px">Quiz Complete!</div>
+      <div style="font-size:.9rem;color:var(--text2)">${qScore}/${qPool.length} correct</div>
+      <div style="font-size:1.8rem;font-weight:700;color:${pct>=70?'var(--green)':'var(--amber)'};margin:.5rem 0 1rem">${pct}%</div>
+      <button class="btn btn-p btn-full" onclick="${qSecId?`startSectionQuiz('${qSecId}')`:'startQuiz()'}" style="margin-bottom:7px">↩ Try Again</button>
+      <button class="btn btn-s btn-full" onclick="goHome()">← Counting Home</button>
+    </div>`;return;
+  }
+  const item=qPool[qIdx];
+  const all=SECTIONS.flatMap(s=>s.items);
+  const wrongs=shuf(all.filter(x=>x.n!==item.n)).slice(0,3);
+  const opts=shuf([item,...wrongs]);
+  $('quiz-content').innerHTML=`<div class="quiz-card">
+    <div class="quiz-score">Q ${qIdx+1}/${qPool.length} · Score: ${qScore}</div>
+    <div class="quiz-char" style="font-size:2.5rem" onclick="speak('${item.kana.split(' / ')[0].replace(/'/g,"\\'")}')"> ${esc(item.jp)}</div>
+    <div class="quiz-txt">${esc(item.kana)} — What is this? (tap to hear 🔊)</div>
+    <div class="quiz-opts" id="q-opts"></div>
+    <div class="quiz-fb" id="q-fb"></div>
+    <button class="btn-next" id="q-nxt" onclick="qIdx++;renderQuizQ()" disabled>Next →</button>
+  </div>`;
+  setTimeout(()=>speak(item.kana.split(' / ')[0],0.75),350);
+  const oc=$('q-opts');
+  opts.forEach(o=>{
+    const b=document.createElement('button');
+    b.className='quiz-opt';b.textContent=o.n;
+    b.addEventListener('click',()=>{
+      if(!$('q-nxt').disabled)return;
+      document.querySelectorAll('.quiz-opt').forEach(x=>x.disabled=true);
+      const ok=o.n===item.n;
+      b.classList.add(ok?'ok':'ng');
+      if(!ok)document.querySelectorAll('.quiz-opt').forEach(x=>{if(x.textContent===item.n)x.classList.add('ok');});
+      $('q-fb').textContent=ok?'✓ Correct!':'✗ Answer: '+item.n;
+      $('q-fb').className='quiz-fb '+(ok?'ok':'ng');
+      if(ok)qScore++;
+      $('q-nxt').disabled=false;
+    });
+    oc.appendChild(b);
+  });
+}
+
+// drawer sections
+$('drawer-sections').innerHTML=SECTIONS.map(s=>`
+  <div class="dr-item" onclick="goSection('${s.id}');closeDrawer()">
+    <span class="dr-icon">${s.icon}</span>
+    <div><div class="dr-title">${esc(s.title)}</div><div class="dr-sub">${esc(s.sub)}</div></div>
+  </div>`).join('');
+
+$('menu-btn').addEventListener('click',openDrawer);
+$('mask').addEventListener('click',closeDrawer);
+$('dr-close').addEventListener('click',closeDrawer);
+goHome();
+</script>
+</body>
+</html>
